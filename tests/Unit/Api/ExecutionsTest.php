@@ -13,7 +13,7 @@ it('lists executions without filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/executions"
     );
 });
@@ -32,7 +32,7 @@ it('lists executions with filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/executions?workflowId=w1&limit=25&status=success"
     );
 });
@@ -47,7 +47,7 @@ it('gets execution without data', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/executions/1?includeData=false"
     );
 });
@@ -60,7 +60,7 @@ it('gets execution with data', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/executions/1?includeData=true"
     );
 });
@@ -73,7 +73,7 @@ it('deletes execution', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Delete->value
+        fn ($r) => RequestMethod::isDelete($r->method())
         && $r->url() === "{$url}/executions/1"
     );
 });

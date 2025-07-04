@@ -16,7 +16,7 @@ it('executes source-control pull', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Post->value
+        fn ($r) => RequestMethod::isPost($r->method())
         && $r->url() === "{$url}/source-control/pull"
         && $r->data() === $payload
     );

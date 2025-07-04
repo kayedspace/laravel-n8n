@@ -16,7 +16,7 @@ it('creates a tag', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value &&
+        fn ($req) => RequestMethod::isPost($req->method()) &&
         $req->url() === "{$url}/tags" &&
         $req['name'] === 'Marketing'
     );
@@ -30,7 +30,7 @@ it('lists tags without cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::isGet($req->method()) &&
         $req->url() === "{$url}/tags?limit=50"
     );
 });
@@ -43,7 +43,7 @@ it('lists tags with cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::isGet($req->method()) &&
         $req->url() === "{$url}/tags?limit=25&cursor=abc"
     );
 });
@@ -58,7 +58,7 @@ it('gets a tag', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::isGet($req->method()) &&
         $req->url() === "{$url}/tags/t1"
     );
 });
@@ -71,7 +71,7 @@ it('updates a tag', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value &&
+        fn ($req) => RequestMethod::isPut($req->method()) &&
         $req->url() === "{$url}/tags/t1" &&
         $req['name'] === 'Updated'
     );
@@ -85,7 +85,7 @@ it('deletes a tag', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Delete->value &&
+        fn ($req) => RequestMethod::isDelete($req->method()) &&
         $req->url() === "{$url}/tags/t1"
     );
 });
