@@ -1,9 +1,9 @@
-<h1> Laravel N8N - A complete, expressive, and fluent N8N Laravel client</h1>
+# Laravel N8N: A Fluent Client for n8n Automation Workflows
 
-A complete, expressive, and fluent Laravel client for the n8n public REST API and Webhooks Triggering, empowering PHP
+A complete, expressive, and fluent Laravel client for the n8n public REST API and Webhooks Triggering, empowering Laravel
 developers to interact
-seamlessly with n8n webhooks, workflows, executions, credentials, tags, users, variables, projects, and source control
-operations.
+seamlessly with n8n webhooks, workflows, executions, credentials, tags, users, variables, projects, source control
+operations and more.
 
 ## Table of Contents
 
