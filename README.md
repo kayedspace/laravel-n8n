@@ -30,7 +30,7 @@ operations.
 Install via Composer:
 
 ```bash
-composer require kayedspace/n8n-laravel
+composer require kayedspace/laravel-n8n
 ```
 
 Service providers and facades are auto-discovered by Laravel.
