@@ -16,7 +16,7 @@ it('creates a project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Post->value
+        fn ($r) => RequestMethod::isPost($r->method())
         && $r->url() === "{$url}/projects"
         && $r->data() === $payload
     );
@@ -30,7 +30,7 @@ it('lists projects without cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/projects?limit=50"
     );
 });
@@ -43,7 +43,7 @@ it('lists projects with cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::isGet($r->method())
         && $r->url() === "{$url}/projects?limit=25&cursor=abc"
     );
 });
@@ -57,7 +57,7 @@ it('updates a project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Put->value
+        fn ($r) => RequestMethod::isPut($r->method())
         && $r->url() === "{$url}/projects/p1"
         && $r->data() === $payload
     );
@@ -71,7 +71,7 @@ it('deletes a project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Delete->value
+        fn ($r) => RequestMethod::isDelete($r->method())
         && $r->url() === "{$url}/projects/p1"
     );
 });
@@ -89,7 +89,7 @@ it('adds users to a project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Post->value
+        fn ($r) => RequestMethod::isPost($r->method())
         && $r->url() === "{$url}/projects/p1/users"
         && $r['relations'] === $relations
     );
@@ -103,7 +103,7 @@ it('changes a user role in project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Patch->value
+        fn ($r) => RequestMethod::isPatch($r->method())
         && $r->url() === "{$url}/projects/p1/users/u1"
         && $r['role'] === 'admin'
     );
@@ -117,7 +117,7 @@ it('removes a user from project', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Delete->value
+        fn ($r) => RequestMethod::isDelete($r->method())
         && $r->url() === "{$url}/projects/p1/users/u1"
     );
 });

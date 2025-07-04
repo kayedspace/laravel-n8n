@@ -16,7 +16,7 @@ it('creates a workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
+        fn ($req) => RequestMethod::isPost($req->method())
         && $req->url() === "{$url}/workflows"
         && $req['name'] === 'My flow'
     );
@@ -31,7 +31,7 @@ it('lists workflows with filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
+        fn ($req) => RequestMethod::isGet($req->method())
         && $req->url() === "{$url}/workflows?active=true&limit=20"
     );
 });
@@ -44,7 +44,7 @@ it('gets workflow without pinned data', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
+        fn ($req) => RequestMethod::isGet($req->method())
         && $req->url() === "{$url}/workflows/wf1?excludePinnedData=false"
     );
 });
@@ -57,7 +57,7 @@ it('updates workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
+        fn ($req) => RequestMethod::isPut($req->method())
         && $req->url() === "{$url}/workflows/wf1"
         && $req['name'] === 'updated'
     );
@@ -71,7 +71,7 @@ it('deletes workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Delete->value
+        fn ($req) => RequestMethod::isDelete($req->method())
         && $req->url() === "{$url}/workflows/wf1"
     );
 });
@@ -87,11 +87,11 @@ it('activates and deactivates workflow', function () {
     Http::assertSentCount(2);
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
+        fn ($req) => RequestMethod::isPost($req->method())
         && $req->url() === "{$url}/workflows/wf1/activate"
     );
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
+        fn ($req) => RequestMethod::isPost($req->method())
         && $req->url() === "{$url}/workflows/wf1/deactivate"
     );
 });
@@ -104,7 +104,7 @@ it('transfers workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
+        fn ($req) => RequestMethod::isPut($req->method())
         && $req->url() === "{$url}/workflows/wf1/transfer"
         && $req['destinationProjectId'] === 'dest'
     );
@@ -119,12 +119,12 @@ it('gets and updates workflow tags', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
+        fn ($req) => RequestMethod::isGet($req->method())
         && $req->url() === "{$url}/workflows/wf1/tags"
     );
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
+        fn ($req) => RequestMethod::isPut($req->method())
         && $req->url() === "{$url}/workflows/wf1/tags"
         && $req->data() === ['t1', 't2']
     );
