@@ -45,7 +45,6 @@ class Webhooks
 
     public function withBasicAuth(string $username, string $password): static
     {
-
         $this->basicAuth = [
             'username' => $username,
             'password' => $password,
