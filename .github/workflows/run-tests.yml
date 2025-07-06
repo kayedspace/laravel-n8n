@@ -1,4 +1,4 @@
-name: run-tests
+name: run PEST tests
 
 on:
   push:
@@ -7,7 +7,12 @@ on:
       - '.github/workflows/run-tests.yml'
       - 'phpunit.xml.dist'
       - 'composer.json'
-
+  pull_request:   
+    branches: ['main']
+    paths:
+      - '**.php'
+  merge_group:   
+    branches: ['main']
 jobs:
   test:
     runs-on: ${{ matrix.os }}
