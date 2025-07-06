@@ -16,9 +16,9 @@ it('creates a workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
-        && $req->url() === "{$url}/workflows"
-        && $req['name'] === 'My flow'
+        fn ($req) => RequestMethod::Post->is($req->method())
+            && $req->url() === "{$url}/workflows"
+            && $req['name'] === 'My flow'
     );
 });
 
@@ -31,8 +31,8 @@ it('lists workflows with filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
-        && $req->url() === "{$url}/workflows?active=true&limit=20"
+        fn ($req) => RequestMethod::Get->is($req->method())
+            && $req->url() === "{$url}/workflows?active=true&limit=20"
     );
 });
 
@@ -44,8 +44,8 @@ it('gets workflow without pinned data', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
-        && $req->url() === "{$url}/workflows/wf1?excludePinnedData=false"
+        fn ($req) => RequestMethod::Get->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1?excludePinnedData=false"
     );
 });
 
@@ -57,9 +57,9 @@ it('updates workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
-        && $req->url() === "{$url}/workflows/wf1"
-        && $req['name'] === 'updated'
+        fn ($req) => RequestMethod::Put->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1"
+            && $req['name'] === 'updated'
     );
 });
 
@@ -71,8 +71,8 @@ it('deletes workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Delete->value
-        && $req->url() === "{$url}/workflows/wf1"
+        fn ($req) => RequestMethod::Delete->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1"
     );
 });
 
@@ -87,12 +87,12 @@ it('activates and deactivates workflow', function () {
     Http::assertSentCount(2);
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
-        && $req->url() === "{$url}/workflows/wf1/activate"
+        fn ($req) => RequestMethod::Post->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1/activate"
     );
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value
-        && $req->url() === "{$url}/workflows/wf1/deactivate"
+        fn ($req) => RequestMethod::Post->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1/deactivate"
     );
 });
 
@@ -104,9 +104,9 @@ it('transfers workflow', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
-        && $req->url() === "{$url}/workflows/wf1/transfer"
-        && $req['destinationProjectId'] === 'dest'
+        fn ($req) => RequestMethod::Put->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1/transfer"
+            && $req['destinationProjectId'] === 'dest'
     );
 });
 
@@ -119,13 +119,13 @@ it('gets and updates workflow tags', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value
-        && $req->url() === "{$url}/workflows/wf1/tags"
+        fn ($req) => RequestMethod::Get->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1/tags"
     );
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Put->value
-        && $req->url() === "{$url}/workflows/wf1/tags"
-        && $req->data() === ['t1', 't2']
+        fn ($req) => RequestMethod::Put->is($req->method())
+            && $req->url() === "{$url}/workflows/wf1/tags"
+            && $req->data() === ['t1', 't2']
     );
 });

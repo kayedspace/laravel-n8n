@@ -13,7 +13,7 @@ it('lists users without filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::Get->is($req->method()) &&
         $req->url() === "{$url}/users"
     );
 });
@@ -33,7 +33,7 @@ it('lists users with filters', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::Get->is($req->method()) &&
         $req->url() === "{$url}/users?limit=20&cursor=xyz&includeRole=true&projectId=proj"
     );
 });
@@ -52,7 +52,7 @@ it('creates users', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Post->value &&
+        fn ($req) => RequestMethod::Post->is($req->method()) &&
         $req->url() === "{$url}/users" &&
         $req->data() === $payload
     );
@@ -66,7 +66,7 @@ it('gets user without role', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::Get->is($req->method()) &&
         $req->url() === "{$url}/users/u1?includeRole=false"
     );
 });
@@ -79,7 +79,7 @@ it('gets user with role', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Get->value &&
+        fn ($req) => RequestMethod::Get->is($req->method()) &&
         $req->url() === "{$url}/users/u1?includeRole=true"
     );
 });
@@ -92,7 +92,7 @@ it('deletes user', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Delete->value &&
+        fn ($req) => RequestMethod::Delete->is($req->method()) &&
         $req->url() === "{$url}/users/u1"
     );
 });
@@ -105,7 +105,7 @@ it('changes user role', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($req) => $req->method() === RequestMethod::Patch->value &&
+        fn ($req) => RequestMethod::Patch->is($req->method()) &&
         $req->url() === "{$url}/users/u1/role" &&
         $req['newRoleName'] === 'editor'
     );

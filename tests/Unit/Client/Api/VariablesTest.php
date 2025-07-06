@@ -16,7 +16,7 @@ it('creates a variable', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Post->value
+        fn ($r) => RequestMethod::Post->is($r->method())
         && $r->url() === "{$url}/variables"
         && $r->data() === $payload
     );
@@ -30,7 +30,7 @@ it('lists variables without cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/variables?limit=50"
     );
 });
@@ -43,7 +43,7 @@ it('lists variables with cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/variables?limit=30&cursor=abc"
     );
 });
@@ -57,7 +57,7 @@ it('updates a variable', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Put->value
+        fn ($r) => RequestMethod::Put->is($r->method())
         && $r->url() === "{$url}/variables/var1"
         && $r->data() === $payload
     );
@@ -71,7 +71,7 @@ it('deletes a variable', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Delete->value
+        fn ($r) => RequestMethod::Delete->is($r->method())
         && $r->url() === "{$url}/variables/var1"
     );
 });

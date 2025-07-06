@@ -12,7 +12,7 @@ it('generates audit ', function () {
     N8nClient::audit()->generate(['foo' => 'bar']);
 
     Http::assertSent(
-        fn ($req) => $req->method() == RequestMethod::Post->value
+        fn ($req) => RequestMethod::Post->is($req->method())
         && $req->url() === "$url/audit"
         && $req['additionalOptions'] === ['foo' => 'bar']
     );

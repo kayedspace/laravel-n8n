@@ -16,7 +16,7 @@ it('creates credentials', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Post->value
+        fn ($r) => RequestMethod::Post->is($r->method())
         && $r->url() === "{$url}/credentials"
         && $r['name'] === 'Cred'
     );
@@ -30,7 +30,7 @@ it('lists credentials without cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/credentials?limit=50"
     );
 });
@@ -43,7 +43,7 @@ it('lists credentials with cursor', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/credentials?limit=25&cursor=abc"
     );
 });
@@ -58,7 +58,7 @@ it('gets a credential', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/credentials/1"
     );
 });
@@ -71,7 +71,7 @@ it('deletes a credential', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Delete->value
+        fn ($r) => RequestMethod::Delete->is($r->method())
         && $r->url() === "{$url}/credentials/1"
     );
 });
@@ -84,7 +84,7 @@ it('gets credential schema', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Get->value
+        fn ($r) => RequestMethod::Get->is($r->method())
         && $r->url() === "{$url}/credentials/schema/aws"
     );
 });
@@ -97,7 +97,7 @@ it('transfers a credential', function () {
     $url = Config::get('n8n.api.base_url');
 
     Http::assertSent(
-        fn ($r) => $r->method() === RequestMethod::Put->value
+        fn ($r) => RequestMethod::Put->is($r->method())
         && $r->url() === "{$url}/credentials/1/transfer"
         && $r['destinationProjectId'] === 'dest'
     );
