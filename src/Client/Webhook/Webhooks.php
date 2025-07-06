@@ -43,7 +43,7 @@ class Webhooks
             ->json();
     }
 
-    public function withBasicAuth($username, $password): static
+    public function withBasicAuth(string $username, string $password): static
     {
 
         $this->basicAuth = [
