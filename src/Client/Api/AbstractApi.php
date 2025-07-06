@@ -28,7 +28,7 @@ abstract class AbstractApi
      */
     protected function request(RequestMethod $method, string $uri, array $data = []): array
     {
-        if ($method === RequestMethod::Get) {
+        if (RequestMethod::Get->is($method)) {
             $data = $this->prepareQuery($data);
         }
 

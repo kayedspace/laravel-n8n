@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KayedSpace\N8n\Enums;
 
+use InvalidArgumentException;
+
 enum RequestMethod: string
 {
     case Get = 'get';
@@ -14,66 +16,23 @@ enum RequestMethod: string
     case Head = 'head';
     case Options = 'options';
 
-    public static function isGet(string|self $value): bool
+    /**
+     * True when the given value refers to **this** method.
+     */
+    public function is(string|self $value): bool
     {
-        if (is_string($value)) {
-            return self::Get->value === strtolower($value);
-        }
-
-        return $value === self::Get;
+        return $this === self::parse($value);
     }
 
-    public static function isPost(string|self $value): bool
+    public static function parse(string|self $value): self
     {
-        if (is_string($value)) {
-            return self::Post->value === strtolower($value);
+        if ($value instanceof self) {
+            return $value;
         }
 
-        return $value === self::Post;
-    }
+        $value = strtolower($value);
 
-    public static function isPut(string|self $value): bool
-    {
-        if (is_string($value)) {
-            return self::Put->value === strtolower($value);
-        }
-
-        return $value === self::Put;
-    }
-
-    public static function isDelete(string|self $value): bool
-    {
-        if (is_string($value)) {
-            return self::Delete->value === strtolower($value);
-        }
-
-        return $value === self::Delete;
-    }
-
-    public static function isPatch(string|self $value): bool
-    {
-        if (is_string($value)) {
-            return self::Patch->value === strtolower($value);
-        }
-
-        return $value === self::Patch;
-    }
-
-    public static function isHead(string|self $value): bool
-    {
-        if (is_string($value)) {
-            return self::Head->value === strtolower($value);
-        }
-
-        return $value === self::Head;
-    }
-
-    public static function isOptions(string|self $value): bool
-    {
-        if (is_string($value)) {
-            return self::Options->value === strtolower($value);
-        }
-
-        return $value === self::Options;
+        return self::tryFrom($value)
+            ?? throw new InvalidArgumentException("Unsupported HTTP method [{$value}]");
     }
 }
