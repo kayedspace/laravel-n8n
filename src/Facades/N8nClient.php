@@ -13,9 +13,10 @@ use KayedSpace\N8n\Client\Api\Users;
 use KayedSpace\N8n\Client\Api\Variables;
 use KayedSpace\N8n\Client\Api\Workflows;
 use KayedSpace\N8n\Client\Webhook\Webhooks;
+use KayedSpace\N8n\Enums\RequestMethod;
 
 /**
- * @method static Webhooks webhooks(string $method = 'get')
+ * @method static Webhooks webhooks(RequestMethod $method = RequestMethod::Get)
  * @method static Audit audit()
  * @method static Credentials credentials()
  * @method static Executions executions()
