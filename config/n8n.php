@@ -10,7 +10,7 @@ return [
         'username' => env('N8N_WEBHOOK_USERNAME'),
         'password' => env('N8N_WEBHOOK_PASSWORD'),
     ],
-    'timeout' => env('N8N_TIMEOUT', 120),
-    'throw' => env('N8N_THROW', true),
-    'retry' => env('N8N_RETRY', 3),
+    'timeout' => (int) env('N8N_TIMEOUT', 120),
+    'throw' => (bool) env('N8N_THROW', true),
+    'retry' => (int) env('N8N_RETRY', 3),
 ];
