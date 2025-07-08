@@ -17,6 +17,12 @@
 	<php>
 		<env name="APP_ENV" value="testing" />
 		<env name="N8N_API_BASE_URL" value="http://localhost:5678/api/v1" />
-		<env name="N8N_API_KEY" value="" />
+		<env name="N8N_API_KEY" value="test-api-key" />
+		<env name="N8N_WEBHOOK_BASE_URL" value="http://localhost:5678/webhook" />
+		<env name="N8N_WEBHOOK_USERNAME" value="test-user" />
+		<env name="N8N_WEBHOOK_PASSWORD" value="test-pass" />
+		<env name="N8N_TIMEOUT" value="120" />
+		<env name="N8N_THROW" value="true" />
+		<env name="N8N_RETRY" value="3" />
 	</php>
 </phpunit>
