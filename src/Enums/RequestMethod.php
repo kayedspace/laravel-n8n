@@ -14,7 +14,6 @@ enum RequestMethod: string
     case Delete = 'delete';
     case Patch = 'patch';
     case Head = 'head';
-    case Options = 'options';
 
     /**
      * True when the given value refers to **this** method.
