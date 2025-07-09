@@ -49,7 +49,8 @@
     "pestphp/pest": "^3.8",
     "pestphp/pest-plugin-laravel": "^3.2",
     "orchestra/testbench": "^10.4",
-    "laravel/pint": "^1.23"
+    "laravel/pint": "^1.23",
+    "larastan/larastan": "^3.5"
   },
   "config": {
     "allow-plugins": {
