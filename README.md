@@ -216,9 +216,17 @@ $syncStatus = N8nClient::sourceControl()->pull([
 **Example:**
 
 ```php
-$tag = N8nClient::tags()->create(['name' => 'Marketing']);
-$updated = N8nClient::tags()->update($tag['id'], ['name' => 'Sales']);
-$all = N8nClient::tags()->list();
+// List all tags
+$tags = N8nClient::tags()->list();
+
+// Create a tag
+$newTag = N8nClient::tags()->create(['name' => 'marketing']);
+
+// Update a tag
+N8nClient::tags()->update($newTag['id'], ['name' => 'marketing-2025']);
+
+// Delete a tag
+N8nClient::tags()->delete($newTag['id']);
 ```
 
 ### 🙍 Users
@@ -234,6 +242,9 @@ $all = N8nClient::tags()->list();
 **Example:**
 
 ```php
+//list users 
+N8nClient::users()->list();
+
 // Invite users
 N8nClient::users()->create([
   ['email' => 'dev@example.com', 'role' => 'member']
@@ -241,6 +252,9 @@ N8nClient::users()->create([
 
 // Promote to admin
 N8nClient::users()->changeRole('dev@example.com', 'admin');
+
+// delete a user
+N8nClient::users()->delete('dev@example.com');
 ```
 
 ### 🔠 Variables
@@ -255,6 +269,9 @@ N8nClient::users()->changeRole('dev@example.com', 'admin');
 **Example:**
 
 ```php
+// list all variable
+N8nClient::variables()->list()
+
 // Create a new variable
 N8nClient::variables()->create(['key' => 'ENV_MODE', 'value' => 'production']);
 
@@ -283,9 +300,32 @@ N8nClient::variables()->delete('ENV_MODE');
 **Example:**
 
 ```php
-// Create and activate a workflow
-$wf = N8nClient::workflows()->create([...]);
-N8nClient::workflows()->activate($wf['id']);
+// Create and  a workflow
+$workflow = N8nClient::workflows()->create([
+    'name'   => 'Daily Report',
+    'nodes'  => [...], // full JSON definition
+    'connections' => [...],
+]);
+
+//Activate the workflow
+N8nClient::workflows()->activate($workflow['id']);
+
+//Deactivate the workflow
+N8nClient::workflows()->deactivate($workflow['id']);
+
+//update the workflow.
+N8nClient::workflows()->update($workflow['id'],[...]);
+
+//Move a workflow to a different project.
+N8nClient::workflows()->transfer($workflow['id'],$destinationProjectId);
+
+//Get all tags associated with the workflow.
+N8nClient::workflows()->tags($workflow['id']);
+
+// update workflow tags.
+N8nClient::workflows()->updateTags($workflow['id']);
+
+//Delete the workflow.
 
 ```
 
