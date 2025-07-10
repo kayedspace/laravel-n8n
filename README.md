@@ -323,9 +323,10 @@ N8nClient::workflows()->transfer($workflow['id'],$destinationProjectId);
 N8nClient::workflows()->tags($workflow['id']);
 
 // update workflow tags.
-N8nClient::workflows()->updateTags($workflow['id']);
+N8nClient::workflows()->updateTags($workflow['id'],[...]);
 
 //Delete the workflow.
+N8nClient::workflows()->delete($workflow['id']);
 
 ```
 
