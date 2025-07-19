@@ -12,8 +12,9 @@ abstract class AbstractApi
 {
     public function __construct(protected PendingRequest $httpClient)
     {
-        $baseUrl = Config::get('n8n.api.base_url');
-        $key = Config::get('n8n.api.key');
+        $baseUrl = Config::string('n8n.api.base_url');
+        $key = Config::string('n8n.api.key');
+
         $this->httpClient = $httpClient->baseUrl($baseUrl)->withHeaders([
             'X-N8N-API-KEY' => $key,
             'Accept' => 'application/json',

@@ -34,7 +34,7 @@ class Webhooks
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function request($path, array $data = []): ?array
+    public function request(string $path, array $data = []): ?array
     {
         return $this->httpClient
             ->when($this->basicAuth,
