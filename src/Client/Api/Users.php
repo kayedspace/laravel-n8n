@@ -41,7 +41,7 @@ class Users extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function delete(string $idOrEmail)
+    public function delete(string $idOrEmail): array
     {
         return $this->request(RequestMethod::Delete, "/users/{$idOrEmail}");
     }
