@@ -32,7 +32,7 @@ class N8nClient
             ->when($retry, fn ($request) => $request->retry($retry));
     }
 
-    public function webhooks($method = RequestMethod::Post): Webhooks
+    public function webhooks(RequestMethod $method = RequestMethod::Post): Webhooks
     {
         return new Webhooks($this->httpClient, $method);
     }
