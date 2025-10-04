@@ -4,6 +4,12 @@ namespace KayedSpace\N8n;
 
 use Illuminate\Support\ServiceProvider;
 use KayedSpace\N8n\Client\N8nClient;
+use KayedSpace\N8n\Console\ActivateWorkflowCommand;
+use KayedSpace\N8n\Console\DeactivateWorkflowCommand;
+use KayedSpace\N8n\Console\ExecutionStatusCommand;
+use KayedSpace\N8n\Console\HealthCheckCommand;
+use KayedSpace\N8n\Console\ListWorkflowsCommand;
+use KayedSpace\N8n\Console\TestWebhookCommand;
 
 class N8nServiceProvider extends ServiceProvider
 {
@@ -18,5 +24,16 @@ class N8nServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/n8n.php' => $this->app->configPath('n8n.php'),
         ], 'n8n-config');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                HealthCheckCommand::class,
+                ListWorkflowsCommand::class,
+                ActivateWorkflowCommand::class,
+                DeactivateWorkflowCommand::class,
+                ExecutionStatusCommand::class,
+                TestWebhookCommand::class,
+            ]);
+        }
     }
 }
