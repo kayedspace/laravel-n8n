@@ -4,15 +4,18 @@ namespace KayedSpace\N8n\Client\Api;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Collection;
+use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
 
 class Credentials extends AbstractApi
 {
+    use HasPagination;
     /**
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function create(array $payload): array
+    public function create(array $payload): Collection|array
     {
         return $this->request(RequestMethod::Post, '/credentials', $payload);
     }
@@ -21,7 +24,7 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function list(int $limit = 100, ?string $cursor = null): array
+    public function list(int $limit = 100, ?string $cursor = null): Collection|array
     {
         return $this->request(RequestMethod::Get, '/credentials', array_filter([
             'limit' => $limit,
@@ -33,7 +36,7 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function get(string $id): array
+    public function get(string $id): Collection|array
     {
         return $this->request(RequestMethod::Get, "/credentials/{$id}");
     }
@@ -42,7 +45,7 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function delete(string $id): array
+    public function delete(string $id): Collection|array
     {
         return $this->request(RequestMethod::Delete, "/credentials/{$id}");
     }
@@ -51,7 +54,7 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function schema(string $typeName): array
+    public function schema(string $typeName): Collection|array
     {
         return $this->request(RequestMethod::Get, "/credentials/schema/{$typeName}");
     }
@@ -60,7 +63,7 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function transfer(string $id, string $destinationProjectId): array
+    public function transfer(string $id, string $destinationProjectId): Collection|array
     {
         return $this->request(RequestMethod::Put, "/credentials/{$id}/transfer", [
             'destinationProjectId' => $destinationProjectId,

@@ -4,15 +4,19 @@ namespace KayedSpace\N8n\Client\Api;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Collection;
+use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
 
 class Projects extends AbstractApi
 {
+    use HasPagination;
+
     /**
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function create(array $payload): array
+    public function create(array $payload): Collection|array
     {
         return $this->request(RequestMethod::Post, '/projects', $payload);
     }
@@ -21,7 +25,7 @@ class Projects extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function list(int $limit = 100, ?string $cursor = null): array
+    public function list(int $limit = 100, ?string $cursor = null): Collection|array
     {
         return $this->request(RequestMethod::Get, '/projects', array_filter([
             'limit' => $limit,

@@ -4,15 +4,19 @@ namespace KayedSpace\N8n\Client\Api;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Collection;
+use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
 
 class Variables extends AbstractApi
 {
+    use HasPagination;
+
     /**
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function create(array $payload): array
+    public function create(array $payload): Collection|array
     {
         return $this->request(RequestMethod::Post, '/variables', $payload);
     }
@@ -21,7 +25,7 @@ class Variables extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function list(int $limit = 100, ?string $cursor = null): array
+    public function list(int $limit = 100, ?string $cursor = null): Collection|array
     {
         return $this->request(RequestMethod::Get, '/variables', array_filter([
             'limit' => $limit,
@@ -45,5 +49,43 @@ class Variables extends AbstractApi
     public function update(string $id, array $payload): void
     {
         $this->request(RequestMethod::Put, "/variables/{$id}", $payload); // 204
+    }
+
+    /**
+     * Create multiple variables.
+     */
+    public function createMany(array $variables): array
+    {
+        $results = [];
+
+        foreach ($variables as $variable) {
+            try {
+                $result = $this->create($variable);
+                $results[] = ['success' => true, 'data' => $result];
+            } catch (\Exception $e) {
+                $results[] = ['success' => false, 'error' => $e->getMessage(), 'variable' => $variable];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Delete multiple variables.
+     */
+    public function deleteMany(array $ids): array
+    {
+        $results = [];
+
+        foreach ($ids as $id) {
+            try {
+                $this->delete($id);
+                $results[$id] = ['success' => true];
+            } catch (\Exception $e) {
+                $results[$id] = ['success' => false, 'error' => $e->getMessage()];
+            }
+        }
+
+        return $results;
     }
 }
