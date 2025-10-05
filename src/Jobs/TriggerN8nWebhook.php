@@ -7,11 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use KayedSpace\N8n\Client\Webhook\Webhooks;
 use KayedSpace\N8n\Enums\RequestMethod;
-use KayedSpace\N8n\Events\WebhookTriggered;
 
 class TriggerN8nWebhook implements ShouldQueue
 {
@@ -21,33 +19,15 @@ class TriggerN8nWebhook implements ShouldQueue
         public string $path,
         public array $data,
         public RequestMethod $method = RequestMethod::Post,
-        public ?array $basicAuth = null
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
-        $baseUrl = Config::string('n8n.webhook.base_url');
+        // Create Webhooks client instance
+        $webhooks = new Webhooks(Http::asJson(), $this->method);
 
-        $request = Http::baseUrl($baseUrl)
-            ->timeout(Config::integer('n8n.timeout', 120));
-
-        if ($this->basicAuth) {
-            $request = $request->withBasicAuth(
-                $this->basicAuth['username'],
-                $this->basicAuth['password']
-            );
-        }
-
-        $response = $request->{$this->method->value}($this->path, $this->data);
-
-        // Dispatch event
-        if (Config::get('n8n.events.enabled', true)) {
-            Event::dispatch(new WebhookTriggered(
-                $this->path,
-                $this->data,
-                $response->json() ?? []
-            ));
-        }
+        // Execute webhook request with all advanced features
+        // (logging, metrics, events, caching, client modifiers, exception handling)
+        $webhooks->sync()->request($this->path, $this->data);
     }
 }

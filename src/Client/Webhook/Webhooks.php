@@ -10,11 +10,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use KayedSpace\N8n\Client\BaseClient;
 use KayedSpace\N8n\Enums\RequestMethod;
 use KayedSpace\N8n\Events\WebhookTriggered;
 use KayedSpace\N8n\Jobs\TriggerN8nWebhook;
 
-class Webhooks
+class Webhooks extends BaseClient
 {
     private ?array $basicAuth;
 
@@ -24,6 +25,8 @@ class Webhooks
         protected PendingRequest $httpClient,
         protected RequestMethod $method = RequestMethod::Get
     ) {
+        parent::__construct($httpClient);
+
         $username = Config::string('n8n.webhook.username');
         $password = Config::string('n8n.webhook.password');
         $baseUrl = Config::string('n8n.webhook.base_url');
@@ -69,25 +72,34 @@ class Webhooks
             Queue::connection(Config::get('n8n.queue.connection', 'default'))
                 ->pushOn(
                     Config::get('n8n.queue.queue', 'default'),
-                    new TriggerN8nWebhook($path, $data, $this->method, $this->basicAuth)
+                    new TriggerN8nWebhook($path, $data, $this->method)
                 );
 
             return collect(['queued' => true, 'path' => $path]);
         }
 
-        // Synchronous request
-        $response = $this->httpClient
-            ->when($this->basicAuth,
-                fn ($request) => $request->withBasicAuth($this->basicAuth['username'], $this->basicAuth['password']))
-            ->{$this->method->value}($path, $data)
-            ->json();
+        // Execute synchronous request with full observability
+        return $this->executeRequest(
+            $this->method,
+            $path,
+            $data,
+            function ($httpClient, $method, $uri, $data) {
+                $response = $httpClient
+                    ->when($this->basicAuth,
+                        fn ($request) => $request->withBasicAuth($this->basicAuth['username'], $this->basicAuth['password']))
+                    ->{$method->value}($uri, $data);
 
-        // Dispatch event
-        if (Config::get('n8n.events.enabled', true)) {
-            Event::dispatch(new WebhookTriggered($path, $data, $response ?? []));
-        }
+                $result = $response->json();
 
-        return $this->formatResponse($response);
+                return [$response, $result];
+            },
+            function ($method, $uri, $requestData, $responseData, $status, $duration) {
+                // Dispatch webhook event
+                if (Config::get('n8n.events.enabled', true)) {
+                    Event::dispatch(new WebhookTriggered($uri, $requestData, $responseData ?? []));
+                }
+            }
+        );
     }
 
     /**
@@ -143,21 +155,5 @@ class Webhooks
         $this->basicAuth = null;
 
         return $this;
-    }
-
-    /**
-     * Format response based on config.
-     */
-    protected function formatResponse(mixed $data): Collection|array|null
-    {
-        if ($data === null) {
-            return null;
-        }
-
-        if (Config::get('n8n.return_type') === 'collection') {
-            return collect($data);
-        }
-
-        return is_array($data) ? $data : [];
     }
 }
