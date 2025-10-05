@@ -27,6 +27,8 @@ operations and more.
     * [💾 Response Caching](#-response-caching)
     * [📝 Logging](#-logging)
     * [🔌 Client Modifiers](#-client-modifiers)
+    * [🔧 Macros](#-macros)
+    * [⚠️ Exception Handling](#-exception-handling)
 * [🏥 Health Checks](#-health-checks)
 * [🧪 Testing](#-testing)
 * [🎨 CLI Commands](#-cli-commands)
@@ -186,16 +188,20 @@ invoked by an account with owner privileges.
 |------------------------------------------------------|--------------------------------------|--------------------------------------------------------|
 | `create(array $payload)`                             | `POST /credentials`                  | Create a credential using the appropriate type schema. |
 | `list(int $limit = 100, ?string $cursor = null)`     | `GET /credentials`                   | List stored credentials with optional pagination.      |
+| `all(array $filters = [])`                           | `GET /credentials`                   | Auto-paginate and retrieve all credentials.            |
+| `listIterator(array $filters = [])`                  | `GET /credentials`                   | Memory-efficient generator for iterating credentials.  |
 | `get(string $id)`                                    | `GET /credentials/{id}`              | Retrieve details of a specific credential by ID.       |
 | `delete(string $id)`                                 | `DELETE /credentials/{id}`           | Delete a credential permanently.                       |
 | `schema(string $typeName)`                           | `GET /credentials/schema/{typeName}` | Get the schema definition for a credential type.       |
 | `transfer(string $id, string $destinationProjectId)` | `PUT /credentials/{id}/transfer`     | Move a credential to another project using its ID.     |
 
-**Example:**
+**Examples:**
 
 ```php
+// Get credential schema
 $schema = N8nClient::credentials()->schema('slackApi');
 
+// Create a credential
 N8nClient::credentials()->create([
     'name' => 'Slack Token',
     'type' => 'slackApi',
@@ -203,6 +209,9 @@ N8nClient::credentials()->create([
         'token' => 'xoxb-123456789',
     ]
 ]);
+
+// Get all credentials
+$allCredentials = N8nClient::credentials()->all();
 ```
 
 ### ⏯️ Executions
@@ -247,17 +256,22 @@ $results = N8nClient::executions()->deleteMany([101, 102, 103]);
 |-------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------|
 | `create(array $payload)`                                          | `POST /projects`                              | Create a new project with name, description, etc.                      |
 | `list(int $limit = 100, ?string $cursor = null)`                  | `GET /projects`                               | Retrieve a paginated list of projects.                                 |
+| `all(array $filters = [])`                                        | `GET /projects`                               | Auto-paginate and retrieve all projects.                               |
+| `listIterator(array $filters = [])`                               | `GET /projects`                               | Memory-efficient generator for iterating through all projects.         |
 | `update(string $projectId, array $payload)`                       | `PUT /projects/{projectId}`                   | Update project name or metadata. Returns 204 No Content on success.    |
 | `delete(string $projectId)`                                       | `DELETE /projects/{projectId}`                | Delete a project by ID. Returns 204 No Content on success.             |
 | `addUsers(string $projectId, array $relations)`                   | `POST /projects/{projectId}/users`            | Add users to a project with specified roles via the `relations` array. |
 | `changeUserRole(string $projectId, string $userId, string $role)` | `PATCH /projects/{projectId}/users/{userId}`  | Change the role of an existing user within a project.                  |
 | `removeUser(string $projectId, string $userId)`                   | `DELETE /projects/{projectId}/users/{userId}` | Remove a user from a project.                                          |
 
-**Example Usage:**
+**Examples:**
 
 ```php
 // Create a project
 $project = N8nClient::projects()->create(['name' => 'DevOps', 'description' => 'CI/CD flows']);
+
+// Get all projects
+$allProjects = N8nClient::projects()->all();
 
 // Add users
 N8nClient::projects()->addUsers($project['id'], [
@@ -327,18 +341,28 @@ N8nClient::tags()->deleteMany(['tag1', 'tag2']);
 | Method Signature                                     | HTTP Method & Path              | Description                                                                      |
 |------------------------------------------------------|---------------------------------|----------------------------------------------------------------------------------|
 | `list(array $filters = [])`                          | `GET /users`                    | List users with optional filters: `limit`, `cursor`, `includeRole`, `projectId`. |
+| `all(array $filters = [])`                           | `GET /users`                    | Auto-paginate and retrieve all users.                                            |
+| `listIterator(array $filters = [])`                  | `GET /users`                    | Memory-efficient generator for iterating through all users.                      |
 | `create(array $userPayloads)`                        | `POST /users`                   | Create (invite) one or more users by providing user objects.                     |
 | `get(string $idOrEmail, bool $includeRole = false)`  | `GET /users/{idOrEmail}`        | Get a user by ID or email. Optionally include role.                              |
 | `delete(string $idOrEmail)`                          | `DELETE /users/{idOrEmail}`     | Delete a user by ID or email.                                                    |
 | `changeRole(string $idOrEmail, string $newRoleName)` | `PATCH /users/{idOrEmail}/role` | Change the user's role to the new role name.                                     |
 
-**Example:**
+**Examples:**
 
 ```php
 // Invite users
 N8nClient::users()->create([
   ['email' => 'dev@example.com', 'role' => 'member']
 ]);
+
+// Get all users
+$allUsers = N8nClient::users()->all();
+
+// Get users with roles included
+foreach (N8nClient::users()->listIterator(['includeRole' => true]) as $user) {
+    // Process each user
+}
 
 // Promote to admin
 N8nClient::users()->changeRole('dev@example.com', 'admin');
@@ -350,20 +374,34 @@ N8nClient::users()->changeRole('dev@example.com', 'admin');
 |--------------------------------------------------|--------------------------|-----------------------------------------------------------------|
 | `create(array $payload)`                         | `POST /variables`        | Create a new variable with a key-value pair.                    |
 | `list(int $limit = 100, ?string $cursor = null)` | `GET /variables`         | List variables with optional pagination using limit and cursor. |
+| `all(array $filters = [])`                       | `GET /variables`         | Auto-paginate and retrieve all variables.                       |
+| `listIterator(array $filters = [])`              | `GET /variables`         | Memory-efficient generator for iterating through all variables. |
 | `update(string $id, array $payload)`             | `PUT /variables/{id}`    | Update the value of an existing variable.                       |
 | `delete(string $id)`                             | `DELETE /variables/{id}` | Permanently delete a variable.                                  |
+| `createMany(array $variables)`                   | `POST /variables`        | Create multiple variables. Returns results with success/error.  |
+| `deleteMany(array $ids)`                         | `DELETE /variables/{id}` | Delete multiple variables. Returns results with success/error.  |
 
-**Example:**
+**Examples:**
 
 ```php
 // Create a new variable
 N8nClient::variables()->create(['key' => 'ENV_MODE', 'value' => 'production']);
 
-// Update the variable
+// Batch create
+$results = N8nClient::variables()->createMany([
+    ['key' => 'API_URL', 'value' => 'https://api.example.com'],
+    ['key' => 'DEBUG_MODE', 'value' => 'false'],
+    ['key' => 'MAX_RETRIES', 'value' => '3'],
+]);
+
+// Get all variables
+$allVariables = N8nClient::variables()->all();
+
+// Update a variable
 N8nClient::variables()->update('ENV_MODE', ['value' => 'staging']);
 
-// Delete the variable
-N8nClient::variables()->delete('ENV_MODE');
+// Batch delete
+N8nClient::variables()->deleteMany(['var1', 'var2', 'var3']);
 ```
 
 ### 🔄 Workflows
@@ -531,6 +569,100 @@ $workflows = N8nClient::workflows()
 ```
 
 Client modifiers receive the `PendingRequest` instance and must return a modified `PendingRequest`.
+
+### 🔧 Macros
+
+Extend API resource classes with custom methods using Laravel's Macroable trait:
+
+```php
+use KayedSpace\N8n\Client\Api\Workflows;
+use KayedSpace\N8n\Facades\N8nClient;
+
+// Register a macro in a service provider
+Workflows::macro('findByName', function (string $name) {
+    $workflows = $this->list(['name' => $name]);
+    return $workflows->firstWhere('name', $name);
+});
+
+Workflows::macro('activateAll', function (array $filters = []) {
+    $workflows = $this->all($filters);
+    $results = [];
+    foreach ($workflows as $workflow) {
+        $results[] = $this->activate($workflow['id']);
+    }
+    return $results;
+});
+
+// Use the macro
+$workflow = N8nClient::workflows()->findByName('My Workflow');
+N8nClient::workflows()->activateAll(['tags' => ['production']]);
+```
+
+All API resource classes support macros.
+
+### ⚠️ Exception Handling
+
+The package provides domain-specific exceptions with detailed context:
+
+```php
+use KayedSpace\N8n\Exceptions\{
+    N8nException,
+    WorkflowNotFoundException,
+    ExecutionFailedException,
+    RateLimitException,
+    AuthenticationException,
+    ValidationException
+};
+
+try {
+    $workflow = N8nClient::workflows()->get('invalid-id');
+} catch (WorkflowNotFoundException $e) {
+    // Handle 404 workflow error
+    $statusCode = $e->getCode(); // 404
+    $response = $e->getResponse(); // Full response object
+    $context = $e->getContext(); // Additional context
+}
+
+try {
+    $execution = N8nClient::executions()->wait($id, timeout: 30);
+} catch (ExecutionFailedException $e) {
+    // Handle failed/crashed execution
+    logger()->error('Execution failed', [
+        'id' => $id,
+        'message' => $e->getMessage(),
+    ]);
+}
+
+try {
+    $workflows = N8nClient::workflows()->list();
+} catch (RateLimitException $e) {
+    // Handle rate limiting
+    $retryAfter = $e->getRetryAfter(); // Seconds to wait
+    sleep($retryAfter);
+}
+
+try {
+    $users = N8nClient::users()->list();
+} catch (AuthenticationException $e) {
+    // Handle 401/403 errors
+    logger()->alert('N8N authentication failed');
+}
+```
+
+Exception hierarchy:
+- `N8nException` - Base exception (all others extend this)
+- `WorkflowNotFoundException` - Workflow not found (404)
+- `ExecutionNotFoundException` - Execution not found (404)
+- `ExecutionFailedException` - Execution failed or crashed
+- `CredentialException` - Credential-related errors
+- `RateLimitException` - Rate limiting (429)
+- `AuthenticationException` - Auth errors (401/403)
+- `ValidationException` - Validation errors (422)
+
+All exceptions provide:
+- `getCode()` - HTTP status code
+- `getResponse()` - Full HTTP response object
+- `getContext()` - Additional context array
 
 ## 🏥 Health Checks
 
