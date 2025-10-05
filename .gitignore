@@ -6,3 +6,5 @@ tests/temp
 .phpunit.result.cache
 .php-cs-fixer.cache
 phpunit.xml
+build/
+

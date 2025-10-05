@@ -25,7 +25,7 @@ abstract class AbstractApi
 
     protected bool $cachingEnabled = false;
 
-    protected array $middleware = [];
+    protected array $clientModifiers = [];
 
     protected array $metrics = [];
 
@@ -62,11 +62,11 @@ abstract class AbstractApi
     }
 
     /**
-     * Add middleware to the request pipeline.
+     * Add a client modifier to customize the HTTP client.
      */
-    public function middleware(callable $middleware): static
+    public function withClientModifier(callable $modifier): static
     {
-        $this->middleware[] = $middleware;
+        $this->clientModifiers[] = $modifier;
 
         return $this;
     }
@@ -81,9 +81,9 @@ abstract class AbstractApi
     {
         $startTime = microtime(true);
 
-        // Apply middleware
-        foreach ($this->middleware as $middleware) {
-            $this->httpClient = $middleware($this->httpClient);
+        // Apply client modifiers
+        foreach ($this->clientModifiers as $modifier) {
+            $this->httpClient = $modifier($this->httpClient);
         }
 
         if (RequestMethod::Get->is($method)) {
@@ -102,12 +102,10 @@ abstract class AbstractApi
 
         // Debug mode
         if (Config::get('n8n.debug')) {
-            dump([
-                'N8N Request' => [
-                    'method' => $method->value,
-                    'uri' => $uri,
-                    'data' => $data,
-                ],
+            Log::debug('N8N Request', [
+                'method' => $method->value,
+                'uri' => $uri,
+                'data' => $data,
             ]);
         }
 
@@ -135,12 +133,10 @@ abstract class AbstractApi
 
             // Debug mode
             if (Config::get('n8n.debug')) {
-                dump([
-                    'N8N Response' => [
-                        'status' => $response->status(),
-                        'duration' => $duration.'s',
-                        'data' => $result,
-                    ],
+                Log::debug('N8N Response', [
+                    'status' => $response->status(),
+                    'duration' => $duration.'s',
+                    'data' => $result,
                 ]);
             }
 

@@ -10,8 +10,9 @@ operations and more.
 * [📦 Installation](#-installation)
 * [⚙️ Configuration](#-configuration)
 * [🚀 Quick Start](#-quick-start)
-* [⚡ Webhooks Trigger](#-webhooks-trigger)
-* [📚 Full API Resource Reference](#-full-api-resource-reference)
+* [⚡ Webhooks](#-webhooks)
+* [🏗️ Workflow Builder](#-workflow-builder)
+* [📚 API Resources](#-api-resources)
     * [🕵 Audit](#-audit)
     * [🔑 Credentials](#-credentials)
     * [⏯️ Executions](#-executions)
@@ -21,6 +22,14 @@ operations and more.
     * [🙍 Users](#-users)
     * [🔠 Variables](#-variables)
     * [🔄 Workflows](#-workflows)
+* [🔧 Advanced Features](#-advanced-features)
+    * [📊 Events System](#-events-system)
+    * [💾 Response Caching](#-response-caching)
+    * [📝 Logging](#-logging)
+    * [🔌 Client Modifiers](#-client-modifiers)
+* [🏥 Health Checks](#-health-checks)
+* [🧪 Testing](#-testing)
+* [🎨 CLI Commands](#-cli-commands)
 * [🤝 Contributing](#-contributing)
 * [🛠 Support](#-support)
 * [📄 License](#-license)
@@ -63,41 +72,101 @@ N8N_WEBHOOK_PASSWORD=your_webhook_password
 ```php
 use KayedSpace\N8n\Facades\N8nClient;
 
-// trigger webhook
-$webhookTrigger =N8nClient::webhooks()->request("path-to-webhook",$payload);
+// Trigger webhook
+$webhookTrigger = N8nClient::webhooks()->request("path-to-webhook", $payload);
 
 // List all workflows
 $workflows = N8nClient::workflows()->list();
 
-
 // Retrieve execution status with data
 $status = N8nClient::executions()->get($execution['id'], includeData: true);
-
 ```
 
-## ⚡ Webhooks Trigger
+## ⚡ Webhooks
 
-The Webhooks class enables sending HTTP requests to n8n workflow webhook trigger URLs, supporting multiple HTTP verbs (
-GET, POST, etc.) and basic authentication (if configured).
+The Webhooks client enables triggering n8n workflow webhooks with support for multiple HTTP methods, authentication, async processing, and signature verification.
 
-> basic auth is applied by default if `N8N_WEBHOOK_USERNAME`, `N8N8_WEBHOOK_PASSOWRD` are set in the .env file.
-
-**Example:**
+### Basic Usage
 
 ```php
-//request a webhook
-$webhookTrigger =N8nClient::webhooks()->request("path-to-webhook",$payload);
+// Trigger a webhook
+$response = N8nClient::webhooks()->request("path-to-webhook", $payload);
 
-//request a webhook with custom basic auth credentials
-//overwrites values provided on .env` file 
-$webhookTrigger =N8nClient::withBasicAuth("custom-username","custom-password")->request("path-to-webhook",$payload);
+// Custom basic auth (overrides .env credentials)
+$response = N8nClient::webhooks()
+    ->withBasicAuth("username", "password")
+    ->request("path-to-webhook", $payload);
 
-//request a  webhook without  auth
-$webhookTrigger =N8nClient::withoutBasicAuth()->request("path-to-webhook",$payload);
-
+// Without authentication
+$response = N8nClient::webhooks()
+    ->withoutBasicAuth()
+    ->request("path-to-webhook", $payload);
 ```
 
-## 📚 Full API Resource Reference
+> Basic auth is applied by default if `N8N_WEBHOOK_USERNAME` and `N8N_WEBHOOK_PASSWORD` are set in .env.
+
+### Async Webhook Triggering
+
+Queue webhook triggers for background processing:
+
+```php
+// Enable in .env: N8N_QUEUE_ENABLED=true
+
+// Queue the webhook (returns immediately)
+N8nClient::webhooks()->async()->request('/my-webhook', $data);
+
+// Force synchronous (default)
+N8nClient::webhooks()->sync()->request('/my-webhook', $data);
+```
+
+### Webhook Signature Verification
+
+Secure incoming n8n webhooks with HMAC verification:
+
+```php
+// Set signature key in .env: N8N_WEBHOOK_SIGNATURE_KEY=your_secret
+
+// Apply middleware to routes
+Route::post('/n8n/webhook', WebhookController::class)
+    ->middleware('n8n.webhook');
+
+// Manual verification
+use KayedSpace\N8n\Client\Webhook\Webhooks;
+
+if (Webhooks::verifySignature($request)) {
+    // Valid signature - process webhook
+}
+```
+
+## 🏗️ Workflow Builder
+
+Build n8n workflows programmatically using a fluent, expressive DSL:
+
+```php
+use KayedSpace\N8n\Support\WorkflowBuilder;
+
+$workflow = WorkflowBuilder::create('Customer Onboarding')
+    ->trigger('webhook', ['path' => 'customer-created'])
+    ->node('httpRequest', [
+        'url' => 'https://api.example.com/customer/{{$json.id}}',
+        'method' => 'GET',
+    ])
+    ->node('emailSend', [
+        'toEmail' => '{{$json.email}}',
+        'subject' => 'Welcome!',
+    ])
+    ->activate()
+    ->saveAndActivate();
+
+// Build without activation
+$workflow = WorkflowBuilder::create('Data Pipeline')
+    ->trigger('schedule', ['rule' => '0 0 * * *'])
+    ->node('httpRequest', ['url' => 'https://api.example.com/data'])
+    ->node('set', ['values' => ['processed' => true]])
+    ->save();
+```
+
+## 📚 API Resources
 
 Below is an exhaustive reference covering every resource and method provided.
 
@@ -138,23 +207,38 @@ N8nClient::credentials()->create([
 
 ### ⏯️ Executions
 
-| Method Signature                          | HTTP Method & Path        | Description                                                                                                                                       |
-|-------------------------------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| `list(array $filters = [])`               | `GET /executions`         | Retrieve a paginated list of workflow executions. Supports filters such as `status`, `workflowId`, `projectId`, `includeData`, `limit`, `cursor`. |
-| `get(int $id, bool $includeData = false)` | `GET /executions/{id}`    | Retrieve detailed information for a specific execution. Optionally include execution data.                                                        |
-| `delete(int $id)`                         | `DELETE /executions/{id}` | Delete an execution record by ID.                                                                                                                 |
+| Method Signature                                                   | HTTP Method & Path        | Description                                                                                                                                       |
+|--------------------------------------------------------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `list(array $filters = [])`                                        | `GET /executions`         | Retrieve a paginated list of workflow executions. Supports filters such as `status`, `workflowId`, `projectId`, `includeData`, `limit`, `cursor`. |
+| `all(array $filters = [])`                                         | `GET /executions`         | Auto-paginate and retrieve all executions matching filters.                                                                                       |
+| `listIterator(array $filters = [])`                                | `GET /executions`         | Memory-efficient generator for iterating through all executions.                                                                                  |
+| `get(int $id, bool $includeData = false)`                          | `GET /executions/{id}`    | Retrieve detailed information for a specific execution. Optionally include execution data.                                                        |
+| `wait(int $id, int $timeout = 60, int $interval = 2)`              | `GET /executions/{id}`    | Poll an execution until completion or timeout. Throws `ExecutionFailedException` on failure.                                                      |
+| `delete(int $id)`                                                  | `DELETE /executions/{id}` | Delete an execution record by ID.                                                                                                                 |
+| `deleteMany(array $ids)`                                           | `DELETE /executions/{id}` | Delete multiple executions. Returns results array with success/error for each ID.                                                                 |
 
-**Example:**
+**Examples:**
 
 ```php
-// Get a list of executions filtered by status
-$executions = N8nClient::executions()->list(['status' => 'success']);
+// List executions with pagination
+$executions = N8nClient::executions()->list(['status' => 'success', 'limit' => 50]);
+
+// Get all executions (auto-paginate)
+$allExecutions = N8nClient::executions()->all(['workflowId' => 'wf1']);
+
+// Memory-efficient iteration
+foreach (N8nClient::executions()->listIterator(['status' => 'error']) as $execution) {
+    // Process one at a time
+}
 
 // Get detailed execution data
-$execution = N8nClient::executions()->get(101, true);
+$execution = N8nClient::executions()->get(101, includeData: true);
 
-// Delete an execution
-N8nClient::executions()->delete(101);
+// Wait for execution to complete
+$result = N8nClient::executions()->wait($executionId, timeout: 120, interval: 3);
+
+// Batch delete
+$results = N8nClient::executions()->deleteMany([101, 102, 103]);
 ```
 
 ### 🚧 Projects
@@ -209,16 +293,33 @@ $syncStatus = N8nClient::sourceControl()->pull([
 |--------------------------------------------------|---------------------|------------------------------------------------------------|
 | `create(array $payload)`                         | `POST /tags`        | Create a new tag with the given name or properties.        |
 | `list(int $limit = 100, ?string $cursor = null)` | `GET /tags`         | List all tags with optional pagination using limit/cursor. |
+| `all(array $filters = [])`                       | `GET /tags`         | Auto-paginate and retrieve all tags.                       |
+| `listIterator(array $filters = [])`              | `GET /tags`         | Memory-efficient generator for iterating through all tags. |
 | `get(string $id)`                                | `GET /tags/{id}`    | Retrieve a single tag by its ID.                           |
 | `update(string $id, array $payload)`             | `PUT /tags/{id}`    | Update the name or properties of a specific tag.           |
 | `delete(string $id)`                             | `DELETE /tags/{id}` | Delete a tag permanently by its ID.                        |
+| `createMany(array $tags)`                        | `POST /tags`        | Create multiple tags. Returns results with success/error.  |
+| `deleteMany(array $ids)`                         | `DELETE /tags/{id}` | Delete multiple tags. Returns results with success/error.  |
 
-**Example:**
+**Examples:**
 
 ```php
+// Create tags
 $tag = N8nClient::tags()->create(['name' => 'Marketing']);
-$updated = N8nClient::tags()->update($tag['id'], ['name' => 'Sales']);
-$all = N8nClient::tags()->list();
+
+// Batch create
+$results = N8nClient::tags()->createMany([
+    ['name' => 'Production'],
+    ['name' => 'Development'],
+    ['name' => 'Testing'],
+]);
+
+// Get all tags
+$allTags = N8nClient::tags()->all();
+
+// Update and delete
+N8nClient::tags()->update($tag['id'], ['name' => 'Sales']);
+N8nClient::tags()->deleteMany(['tag1', 'tag2']);
 ```
 
 ### 🙍 Users
@@ -271,22 +372,301 @@ N8nClient::variables()->delete('ENV_MODE');
 |------------------------------------------------------|-----------------------------------|---------------------------------------------------------------------------|
 | `create(array $payload)`                             | `POST /workflows`                 | Create a new workflow using a flow definition.                            |
 | `list(array $filters = [])`                          | `GET /workflows`                  | List workflows with optional filters: `active`, `tags`, `projectId`, etc. |
+| `all(array $filters = [])`                           | `GET /workflows`                  | Auto-paginate and retrieve all workflows matching filters.                |
+| `listIterator(array $filters = [])`                  | `GET /workflows`                  | Memory-efficient generator for iterating through all workflows.           |
 | `get(string $id, bool $excludePinnedData = false)`   | `GET /workflows/{id}`             | Retrieve a specific workflow; optionally exclude pinned node data.        |
 | `update(string $id, array $payload)`                 | `PUT /workflows/{id}`             | Update the workflow definition.                                           |
 | `delete(string $id)`                                 | `DELETE /workflows/{id}`          | Delete the specified workflow.                                            |
 | `activate(string $id)`                               | `POST /workflows/{id}/activate`   | Activate the workflow.                                                    |
 | `deactivate(string $id)`                             | `POST /workflows/{id}/deactivate` | Deactivate the workflow.                                                  |
+| `activateMany(array $ids)`                           | `POST /workflows/{id}/activate`   | Activate multiple workflows. Returns results with success/error per ID.   |
+| `deactivateMany(array $ids)`                         | `POST /workflows/{id}/deactivate` | Deactivate multiple workflows. Returns results with success/error per ID. |
+| `deleteMany(array $ids)`                             | `DELETE /workflows/{id}`          | Delete multiple workflows. Returns results with success/error per ID.     |
+| `export(string $id)`                                 | `GET /workflows/{id}`             | Export workflow definition (for backup/migration).                        |
+| `import(array $workflow)`                            | `POST /workflows`                 | Import a workflow definition.                                             |
 | `transfer(string $id, string $destinationProjectId)` | `PUT /workflows/{id}/transfer`    | Move a workflow to a different project.                                   |
 | `tags(string $id)`                                   | `GET /workflows/{id}/tags`        | Get all tags associated with the workflow.                                |
 | `updateTags(string $id, array $tagIds)`              | `PUT /workflows/{id}/tags`        | Update the list of tag IDs for a workflow.                                |
 
-**Example:**
+**Examples:**
 
 ```php
 // Create and activate a workflow
-$wf = N8nClient::workflows()->create([...]);
-N8nClient::workflows()->activate($wf['id']);
+$workflow = N8nClient::workflows()->create([
+    'name' => 'My Workflow',
+    'nodes' => [...],
+    'connections' => [...],
+]);
+N8nClient::workflows()->activate($workflow['id']);
 
+// Get all active workflows
+$activeWorkflows = N8nClient::workflows()->all(['active' => true]);
+
+// Batch activate
+$results = N8nClient::workflows()->activateMany(['wf1', 'wf2', 'wf3']);
+
+// Export and import
+$exported = N8nClient::workflows()->export('wf1');
+$imported = N8nClient::workflows()->import($exported);
+```
+
+## 🔧 Advanced Features
+
+### 📊 Events System
+
+Listen to n8n operations throughout your Laravel application:
+
+```php
+// In EventServiceProvider
+use KayedSpace\N8n\Events\{
+    WorkflowCreated, WorkflowUpdated, WorkflowDeleted,
+    WorkflowActivated, WorkflowDeactivated,
+    ExecutionCompleted, ExecutionFailed, ExecutionDeleted,
+    WebhookTriggered, ApiRequestCompleted, RateLimitEncountered
+};
+
+protected $listen = [
+    WorkflowCreated::class => [LogWorkflowActivity::class],
+    ExecutionFailed::class => [SendFailureAlert::class, LogToSlack::class],
+    WebhookTriggered::class => [TrackWebhookUsage::class],
+    RateLimitEncountered::class => [SendAdminAlert::class],
+];
+```
+
+Events can be enabled/disabled via config:
+
+```php
+// config/n8n.php or .env
+N8N_EVENTS_ENABLED=true
+```
+
+### 💾 Response Caching
+
+Improve performance by caching API responses:
+
+```php
+// Enable in .env
+N8N_CACHE_ENABLED=true
+N8N_CACHE_TTL=300  // seconds
+
+// Use cached responses
+$workflows = N8nClient::workflows()->cached()->list();
+
+// Force fresh data (bypass cache)
+$workflow = N8nClient::workflows()->fresh()->get($id);
+```
+
+Cache is automatically invalidated on create/update/delete operations.
+
+### 📝 Logging
+
+Comprehensive request/response logging for debugging and monitoring:
+
+```php
+// Enable in .env
+N8N_LOGGING_ENABLED=true
+N8N_LOGGING_CHANNEL=stack        // Laravel logging channel
+N8N_LOGGING_LEVEL=debug          // Logging level
+N8N_LOG_REQUEST_BODY=true        // Log request payloads
+N8N_LOG_RESPONSE_BODY=true       // Log response data
+```
+
+Logs include:
+- HTTP method and URI
+- Status codes
+- Request/response duration
+- Request and response bodies (if enabled)
+- Error details
+
+### 🔌 Client Modifiers
+
+Customize HTTP client behavior by adding modifiers to the request pipeline:
+
+```php
+// Add custom headers
+$workflows = N8nClient::workflows()
+    ->withClientModifier(function ($client) {
+        return $client->withHeaders([
+            'X-Custom-Header' => 'value',
+            'X-Request-ID' => uniqid(),
+        ]);
+    })
+    ->list();
+
+// Add authentication token
+$workflows = N8nClient::workflows()
+    ->withClientModifier(function ($client) {
+        return $client->withToken('bearer-token');
+    })
+    ->get($id);
+
+// Add timeout for specific request
+$execution = N8nClient::executions()
+    ->withClientModifier(function ($client) {
+        return $client->timeout(300); // 5 minutes
+    })
+    ->wait($executionId, timeout: 300);
+
+// Chain multiple modifiers
+$response = N8nClient::workflows()
+    ->withClientModifier(function ($client) {
+        return $client->withHeaders(['X-Tenant-ID' => tenant()->id]);
+    })
+    ->withClientModifier(function ($client) {
+        return $client->retry(5, 1000);
+    })
+    ->list();
+
+// Add request interceptor for debugging
+$workflows = N8nClient::workflows()
+    ->withClientModifier(function ($client) {
+        return $client->beforeSending(function ($request, $options) {
+            logger()->debug('N8N Request', [
+                'url' => $request->url(),
+                'method' => $request->method(),
+            ]);
+        });
+    })
+    ->list();
+```
+
+Client modifiers receive the `PendingRequest` instance and must return a modified `PendingRequest`.
+
+## 🏥 Health Checks
+
+Monitor your n8n instance connectivity and health:
+
+```php
+use KayedSpace\N8n\Support\HealthCheck;
+
+$health = HealthCheck::run();
+
+if ($health->isHealthy()) {
+    echo "All systems operational";
+}
+
+// Get detailed results
+$results = $health->toArray();
+/*
+[
+    'overall_status' => 'healthy',
+    'checks' => [
+        'connectivity' => ['status' => 'pass', 'duration_ms' => 45],
+        'api_response' => ['status' => 'pass', 'duration_ms' => 120],
+        'workflows' => ['status' => 'pass', 'count' => 15],
+        'metrics' => ['workflows' => 15, 'active_workflows' => 8]
+    ]
+]
+*/
+```
+
+CLI command also available:
+
+```bash
+php artisan n8n:health
+```
+
+## 🧪 Testing
+
+Comprehensive testing utilities for your n8n integrations:
+
+### N8nFake
+
+Mock n8n API responses in your tests:
+
+```php
+use KayedSpace\N8n\Testing\N8nFake;
+
+// Setup fake
+N8nFake::fake();
+
+// Queue custom responses
+N8nFake::workflows([
+    'data' => [
+        ['id' => 'wf1', 'name' => 'Test Workflow', 'active' => true]
+    ]
+]);
+
+// Your application code
+$workflows = N8nClient::workflows()->list();
+
+// Assertions
+N8nFake::assertWorkflowCreated();
+N8nFake::assertWorkflowActivated('wf1');
+N8nFake::assertWebhookTriggered('/my-webhook');
+N8nFake::assertSentCount(3);
+
+// Custom assertions
+N8nFake::assertSent(function ($request) {
+    return $request['method'] === 'POST'
+        && str_contains($request['url'], '/workflows');
+});
+
+N8nFake::assertNotSent(function ($request) {
+    return $request['method'] === 'DELETE';
+});
+```
+
+### Test Data Factories
+
+Generate realistic test data:
+
+```php
+use KayedSpace\N8n\Testing\Factories\{WorkflowFactory, ExecutionFactory, CredentialFactory};
+
+// Workflow factory
+$workflow = WorkflowFactory::make()
+    ->active()
+    ->withName('Test Workflow')
+    ->withTags(['tag1', 'tag2'])
+    ->build();
+
+// Execution factory
+$execution = ExecutionFactory::make()
+    ->success()
+    ->withWorkflow('wf1')
+    ->withData(['result' => 'success'])
+    ->build();
+
+$failedExecution = ExecutionFactory::make()
+    ->failed()
+    ->build();
+
+$runningExecution = ExecutionFactory::make()
+    ->running()
+    ->build();
+
+// Credential factory
+$credential = CredentialFactory::make()
+    ->withType('slackApi')
+    ->withName('My Slack')
+    ->withData(['token' => 'xoxb-123'])
+    ->build();
+```
+
+## 🎨 CLI Commands
+
+Manage n8n directly from your terminal:
+
+```bash
+# Health check
+php artisan n8n:health
+
+# List workflows
+php artisan n8n:workflows:list
+php artisan n8n:workflows:list --limit=50
+php artisan n8n:workflows:list --active=true
+
+# Activate/deactivate workflows
+php artisan n8n:workflows:activate {workflow-id}
+php artisan n8n:workflows:deactivate {workflow-id}
+
+# Check execution status
+php artisan n8n:executions:status {execution-id}
+
+# Test webhook
+php artisan n8n:test-webhook {path}
+php artisan n8n:test-webhook /my-webhook --data='{"key":"value"}'
 ```
 
 ## 🤝 Contributing
