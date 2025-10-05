@@ -75,3 +75,35 @@ it('deletes a variable', function () {
         && $r->url() === "{$url}/variables/var1"
     );
 });
+
+it('creates many variables', function () {
+    Http::fake(fn () => Http::response(['id' => 'new-var'], 201));
+
+    $variables = [
+        ['key' => 'API_URL', 'value' => 'https://api.example.com'],
+        ['key' => 'DEBUG_MODE', 'value' => 'false'],
+        ['key' => 'MAX_RETRIES', 'value' => '3'],
+    ];
+
+    $results = N8nClient::variables()->createMany($variables);
+
+    expect($results)->toHaveCount(3)
+        ->and($results[0]['success'])->toBeTrue()
+        ->and($results[1]['success'])->toBeTrue()
+        ->and($results[2]['success'])->toBeTrue();
+
+    Http::assertSentCount(3);
+});
+
+it('deletes many variables', function () {
+    Http::fake(fn () => Http::response([], 204));
+
+    $results = N8nClient::variables()->deleteMany(['var1', 'var2', 'var3']);
+
+    expect($results)->toHaveCount(3)
+        ->and($results['var1']['success'])->toBeTrue()
+        ->and($results['var2']['success'])->toBeTrue()
+        ->and($results['var3']['success'])->toBeTrue();
+
+    Http::assertSentCount(3);
+});

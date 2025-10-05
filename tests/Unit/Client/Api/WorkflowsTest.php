@@ -129,3 +129,104 @@ it('gets and updates workflow tags', function () {
             && $req->data() === ['t1', 't2']
     );
 });
+
+it('activates many workflows', function () {
+    Http::fake(fn () => Http::response(['active' => true], 200));
+
+    $results = N8nClient::workflows()->activateMany(['wf1', 'wf2', 'wf3']);
+
+    expect($results)->toHaveCount(3)
+        ->and($results['wf1']['success'])->toBeTrue()
+        ->and($results['wf2']['success'])->toBeTrue()
+        ->and($results['wf3']['success'])->toBeTrue();
+
+    Http::assertSentCount(3);
+});
+
+it('deactivates many workflows', function () {
+    Http::fake(fn () => Http::response(['active' => false], 200));
+
+    $results = N8nClient::workflows()->deactivateMany(['wf1', 'wf2']);
+
+    expect($results)->toHaveCount(2)
+        ->and($results['wf1']['success'])->toBeTrue()
+        ->and($results['wf2']['success'])->toBeTrue();
+
+    Http::assertSentCount(2);
+});
+
+it('deletes many workflows', function () {
+    Http::fake(fn () => Http::response([], 204));
+
+    $results = N8nClient::workflows()->deleteMany(['wf1', 'wf2']);
+
+    expect($results)->toHaveCount(2)
+        ->and($results['wf1']['success'])->toBeTrue()
+        ->and($results['wf2']['success'])->toBeTrue();
+
+    Http::assertSentCount(2);
+});
+
+it('exports workflows', function () {
+    Http::fake(fn () => Http::response(['id' => 'wf1', 'name' => 'Test'], 200));
+
+    $workflows = N8nClient::workflows()->export(['wf1', 'wf2']);
+
+    expect($workflows)->toHaveCount(2)
+        ->and($workflows[0])->toHaveKey('id')
+        ->and($workflows[0])->toHaveKey('name');
+
+    Http::assertSentCount(2);
+});
+
+it('imports workflows', function () {
+    Http::fake(fn () => Http::response(['id' => 'new-wf'], 201));
+
+    $workflows = [
+        ['name' => 'Workflow 1', 'nodes' => []],
+        ['name' => 'Workflow 2', 'nodes' => []],
+    ];
+
+    $results = N8nClient::workflows()->import($workflows);
+
+    expect($results)->toHaveCount(2)
+        ->and($results[0]['success'])->toBeTrue()
+        ->and($results[1]['success'])->toBeTrue();
+
+    Http::assertSentCount(2);
+});
+
+it('auto-paginates all workflows', function () {
+    Http::fake([
+        '*' => Http::sequence()
+            ->push(['items' => [['id' => 'wf1']], 'nextCursor' => 'cursor1'], 200)
+            ->push(['items' => [['id' => 'wf2']], 'nextCursor' => null], 200),
+    ]);
+
+    $workflows = N8nClient::workflows()->all();
+
+    // Verify pagination worked (2 requests made)
+    Http::assertSentCount(2);
+
+    // Verify we got data back
+    expect($workflows)->not->toBeEmpty();
+});
+
+it('iterates through workflows', function () {
+    Http::fake([
+        '*' => Http::sequence()
+            ->push(['items' => [['id' => 'wf1']], 'nextCursor' => 'cursor1'], 200)
+            ->push(['items' => [['id' => 'wf2']], 'nextCursor' => null], 200),
+    ]);
+
+    $items = [];
+    foreach (N8nClient::workflows()->listIterator() as $workflow) {
+        $items[] = $workflow;
+    }
+
+    // Verify pagination worked (2 requests made)
+    Http::assertSentCount(2);
+
+    // Verify we iterated through items
+    expect($items)->not->toBeEmpty();
+});

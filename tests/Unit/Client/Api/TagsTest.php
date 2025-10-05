@@ -89,3 +89,35 @@ it('deletes a tag', function () {
         $req->url() === "{$url}/tags/t1"
     );
 });
+
+it('creates many tags', function () {
+    Http::fake(fn () => Http::response(['id' => 'new-tag'], 201));
+
+    $tags = [
+        ['name' => 'Production'],
+        ['name' => 'Development'],
+        ['name' => 'Testing'],
+    ];
+
+    $results = N8nClient::tags()->createMany($tags);
+
+    expect($results)->toHaveCount(3)
+        ->and($results[0]['success'])->toBeTrue()
+        ->and($results[1]['success'])->toBeTrue()
+        ->and($results[2]['success'])->toBeTrue();
+
+    Http::assertSentCount(3);
+});
+
+it('deletes many tags', function () {
+    Http::fake(fn () => Http::response([], 204));
+
+    $results = N8nClient::tags()->deleteMany(['t1', 't2', 't3']);
+
+    expect($results)->toHaveCount(3)
+        ->and($results['t1']['success'])->toBeTrue()
+        ->and($results['t2']['success'])->toBeTrue()
+        ->and($results['t3']['success'])->toBeTrue();
+
+    Http::assertSentCount(3);
+});
