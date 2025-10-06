@@ -7,6 +7,9 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\TagCreated;
+use KayedSpace\N8n\Events\TagDeleted;
+use KayedSpace\N8n\Events\TagUpdated;
 
 class Tags extends AbstractApi
 {
@@ -18,7 +21,13 @@ class Tags extends AbstractApi
      */
     public function create(array $payload): Collection|array
     {
-        return $this->request(RequestMethod::Post, '/tags', $payload);
+        $result = $this->request(RequestMethod::Post, '/tags', $payload);
+
+        $this->dispatchResourceEvent(new TagCreated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -48,7 +57,13 @@ class Tags extends AbstractApi
      */
     public function update(string $id, array $payload): Collection|array
     {
-        return $this->request(RequestMethod::Put, "/tags/{$id}", $payload);
+        $result = $this->request(RequestMethod::Put, "/tags/{$id}", $payload);
+
+        $this->dispatchResourceEvent(new TagUpdated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -57,7 +72,11 @@ class Tags extends AbstractApi
      */
     public function delete(string $id): Collection|array
     {
-        return $this->request(RequestMethod::Delete, "/tags/{$id}");
+        $result = $this->request(RequestMethod::Delete, "/tags/{$id}");
+
+        $this->dispatchResourceEvent(new TagDeleted($id));
+
+        return $result;
     }
 
     /**

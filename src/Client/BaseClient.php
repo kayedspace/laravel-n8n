@@ -7,6 +7,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Traits\Macroable;
 use KayedSpace\N8n\Enums\RequestMethod;
@@ -316,5 +317,15 @@ abstract class BaseClient
             429 => RateLimitException::fromResponse($response),
             default => N8nException::fromResponse($response, '', ['method' => $method->value, 'uri' => $uri, 'data' => $data, 'context' => $context]),
         };
+    }
+
+    /**
+     * Dispatch resource-specific event if events are enabled.
+     */
+    protected function dispatchResourceEvent(object $event): void
+    {
+        if (Config::get('n8n.events.enabled', true)) {
+            Event::dispatch($event);
+        }
     }
 }

@@ -7,6 +7,9 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\VariableCreated;
+use KayedSpace\N8n\Events\VariableDeleted;
+use KayedSpace\N8n\Events\VariableUpdated;
 
 class Variables extends AbstractApi
 {
@@ -18,7 +21,13 @@ class Variables extends AbstractApi
      */
     public function create(array $payload): Collection|array
     {
-        return $this->request(RequestMethod::Post, '/variables', $payload);
+        $result = $this->request(RequestMethod::Post, '/variables', $payload);
+
+        $this->dispatchResourceEvent(new VariableCreated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -40,6 +49,8 @@ class Variables extends AbstractApi
     public function delete(string $id): void
     {
         $this->request(RequestMethod::Delete, "/variables/{$id}"); // 204
+
+        $this->dispatchResourceEvent(new VariableDeleted($id));
     }
 
     /**
@@ -49,6 +60,8 @@ class Variables extends AbstractApi
     public function update(string $id, array $payload): void
     {
         $this->request(RequestMethod::Put, "/variables/{$id}", $payload); // 204
+
+        $this->dispatchResourceEvent(new VariableUpdated($id));
     }
 
     /**

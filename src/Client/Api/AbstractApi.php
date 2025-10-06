@@ -59,7 +59,9 @@ abstract class AbstractApi extends BaseClient
 
                     return [$response, $result];
                 },
-                fn ($method, $uri, $requestData, $responseData, $status, $duration) => $this->dispatchEvent($method, $uri, $requestData, $responseData, $status, $duration)
+                fn ($method, $uri, $requestData, $responseData, $status, $duration) => $this->dispatchResourceEvent(
+                    new ApiRequestCompleted($method->value, $uri, $requestData, $responseData, $status, $duration)
+                )
             );
         } catch (RequestException $e) {
             $this->handleException($e, $method, $uri, $data, 'API request');
@@ -116,24 +118,6 @@ abstract class AbstractApi extends BaseClient
     }
 
 
-    /**
-     * Dispatch API event.
-     */
-    protected function dispatchEvent(RequestMethod $method, string $uri, array $requestData, array $responseData, int $status, float $duration): void
-    {
-        if (! Config::get('n8n.events.enabled', true)) {
-            return;
-        }
-
-        Event::dispatch(new ApiRequestCompleted(
-            $method->value,
-            $uri,
-            $requestData,
-            $responseData,
-            $status,
-            $duration
-        ));
-    }
 
     private function prepareQuery(array $data): array
     {

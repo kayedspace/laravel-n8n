@@ -5,8 +5,6 @@ namespace KayedSpace\N8n\Client\Api;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
 use KayedSpace\N8n\Events\ExecutionCompleted;
@@ -129,16 +127,6 @@ class Executions extends AbstractApi
 
             // Wait before next poll
             sleep($interval);
-        }
-    }
-
-    /**
-     * Dispatch resource-specific event if events are enabled.
-     */
-    protected function dispatchResourceEvent(object $event): void
-    {
-        if (Config::get('n8n.events.enabled', true)) {
-            Event::dispatch($event);
         }
     }
 }

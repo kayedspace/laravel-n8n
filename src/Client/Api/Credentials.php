@@ -7,6 +7,8 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\CredentialCreated;
+use KayedSpace\N8n\Events\CredentialDeleted;
 
 class Credentials extends AbstractApi
 {
@@ -17,7 +19,13 @@ class Credentials extends AbstractApi
      */
     public function create(array $payload): Collection|array
     {
-        return $this->request(RequestMethod::Post, '/credentials', $payload);
+        $result = $this->request(RequestMethod::Post, '/credentials', $payload);
+
+        $this->dispatchResourceEvent(new CredentialCreated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -47,7 +55,11 @@ class Credentials extends AbstractApi
      */
     public function delete(string $id): Collection|array
     {
-        return $this->request(RequestMethod::Delete, "/credentials/{$id}");
+        $result = $this->request(RequestMethod::Delete, "/credentials/{$id}");
+
+        $this->dispatchResourceEvent(new CredentialDeleted($id));
+
+        return $result;
     }
 
     /**

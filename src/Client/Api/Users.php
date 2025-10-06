@@ -7,6 +7,9 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\UserCreated;
+use KayedSpace\N8n\Events\UserDeleted;
+use KayedSpace\N8n\Events\UserRoleChanged;
 
 class Users extends AbstractApi
 {
@@ -29,7 +32,13 @@ class Users extends AbstractApi
     public function create(array $userPayloads): Collection|array
     {
         // expects array of user objects
-        return $this->request(RequestMethod::Post, '/users', $userPayloads);
+        $result = $this->request(RequestMethod::Post, '/users', $userPayloads);
+
+        $this->dispatchResourceEvent(new UserCreated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -47,7 +56,11 @@ class Users extends AbstractApi
      */
     public function delete(string $idOrEmail): Collection|array
     {
-        return $this->request(RequestMethod::Delete, "/users/{$idOrEmail}");
+        $result = $this->request(RequestMethod::Delete, "/users/{$idOrEmail}");
+
+        $this->dispatchResourceEvent(new UserDeleted($idOrEmail));
+
+        return $result;
     }
 
     /**
@@ -56,6 +69,10 @@ class Users extends AbstractApi
      */
     public function changeRole(string $idOrEmail, string $newRoleName): Collection|array
     {
-        return $this->request(RequestMethod::Patch, "/users/{$idOrEmail}/role", ['newRoleName' => $newRoleName]);
+        $result = $this->request(RequestMethod::Patch, "/users/{$idOrEmail}/role", ['newRoleName' => $newRoleName]);
+
+        $this->dispatchResourceEvent(new UserRoleChanged($idOrEmail, $newRoleName));
+
+        return $result;
     }
 }

@@ -7,6 +7,9 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\ProjectCreated;
+use KayedSpace\N8n\Events\ProjectDeleted;
+use KayedSpace\N8n\Events\ProjectUpdated;
 
 class Projects extends AbstractApi
 {
@@ -18,7 +21,13 @@ class Projects extends AbstractApi
      */
     public function create(array $payload): Collection|array
     {
-        return $this->request(RequestMethod::Post, '/projects', $payload);
+        $result = $this->request(RequestMethod::Post, '/projects', $payload);
+
+        $this->dispatchResourceEvent(new ProjectCreated(
+            is_array($result) ? $result : $result->toArray()
+        ));
+
+        return $result;
     }
 
     /**
@@ -40,6 +49,8 @@ class Projects extends AbstractApi
     public function update(string $projectId, array $payload): void
     {
         $this->request(RequestMethod::Put, "/projects/{$projectId}", $payload); // 204
+
+        $this->dispatchResourceEvent(new ProjectUpdated($projectId));
     }
 
     /**
@@ -49,6 +60,8 @@ class Projects extends AbstractApi
     public function delete(string $projectId): void
     {
         $this->request(RequestMethod::Delete, "/projects/{$projectId}"); // 204
+
+        $this->dispatchResourceEvent(new ProjectDeleted($projectId));
     }
 
     /**
