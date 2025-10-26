@@ -35,7 +35,7 @@ class Users extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/users', $userPayloads);
 
         $this->dispatchResourceEvent(new UserCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;

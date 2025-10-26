@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\ExecutionCompleted;
+use KayedSpace\N8n\Events\ExecutionDeleted;
+use KayedSpace\N8n\Events\ExecutionFailed;
 use KayedSpace\N8n\Facades\N8nClient;
 
 it('lists executions without filters', function () {
@@ -76,6 +80,33 @@ it('deletes execution', function () {
         fn ($r) => RequestMethod::Delete->is($r->method())
         && $r->url() === "{$url}/executions/1"
     );
+});
+
+it('dispatches execution completed event', function () {
+    Event::fake([ExecutionCompleted::class]);
+    Http::fake(fn () => Http::response(['id' => 99, 'status' => 'success'], 200));
+
+    N8nClient::executions()->get(99, true);
+
+    Event::assertDispatched(ExecutionCompleted::class, fn ($event) => $event->data['id'] === 99);
+});
+
+it('dispatches execution failed event', function () {
+    Event::fake([ExecutionFailed::class]);
+    Http::fake(fn () => Http::response(['id' => 77, 'status' => 'error'], 200));
+
+    N8nClient::executions()->get(77);
+
+    Event::assertDispatched(ExecutionFailed::class, fn ($event) => $event->data['id'] === 77);
+});
+
+it('dispatches execution deleted event', function () {
+    Event::fake([ExecutionDeleted::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::executions()->delete(123);
+
+    Event::assertDispatched(ExecutionDeleted::class, fn ($event) => $event->data['id'] === 123);
 });
 
 it('deletes many executions', function () {

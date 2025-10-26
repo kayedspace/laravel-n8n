@@ -31,7 +31,7 @@ class TestWebhookCommand extends Command
 
             $this->info('✓ Webhook triggered successfully');
             $this->line('Response:');
-            $this->line(json_encode(is_array($response) ? $response : $response->toArray(), JSON_PRETTY_PRINT));
+            $this->line(json_encode(collect($response)->toArray(), JSON_PRETTY_PRINT));
 
             return self::SUCCESS;
         } catch (\Exception $e) {

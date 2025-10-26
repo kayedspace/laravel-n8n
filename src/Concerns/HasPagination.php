@@ -18,12 +18,13 @@ trait HasPagination
         do {
             $response = $this->list(array_merge($filters, array_filter(['cursor' => $cursor])));
 
-            // Handle both array and Collection responses
-            $items = is_array($response) ? ($response['data'] ?? $response['items'] ?? $response) : $response;
-            $meta = is_array($response) ? $response : $response->toArray();
+            $meta = $this->asArray($response);
+            $items = $response instanceof Collection ? $response : ($meta['data'] ?? $meta['items'] ?? $meta);
 
-            if (is_array($items) || $items instanceof Collection) {
-                $allItems = array_merge($allItems, is_array($items) ? $items : $items->toArray());
+            if ($items instanceof Collection) {
+                $allItems = array_merge($allItems, $items->toArray());
+            } elseif (is_array($items)) {
+                $allItems = array_merge($allItems, $items);
             }
 
             // Get next cursor
@@ -43,15 +44,10 @@ trait HasPagination
         do {
             $response = $this->list(array_merge($filters, array_filter(['cursor' => $cursor])));
 
-            // Handle both array and Collection responses
-            $items = is_array($response) ? ($response['data'] ?? $response['items'] ?? $response) : $response;
-            $meta = is_array($response) ? $response : $response->toArray();
+            $meta = $this->asArray($response);
+            $items = $response instanceof Collection ? $response : ($meta['data'] ?? $meta['items'] ?? $meta);
 
-            if (is_array($items)) {
-                foreach ($items as $item) {
-                    yield $item;
-                }
-            } elseif ($items instanceof Collection) {
+            if ($items instanceof Collection || is_array($items)) {
                 foreach ($items as $item) {
                     yield $item;
                 }

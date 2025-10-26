@@ -2,6 +2,7 @@
 
 namespace KayedSpace\N8n\Support;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use KayedSpace\N8n\Facades\N8nClient;
 
@@ -48,11 +49,11 @@ class HealthCheck
     {
         try {
             $workflows = N8nClient::workflows()->list(['limit' => 1]);
-            $isArray = is_array($workflows) || $workflows instanceof \Illuminate\Support\Collection;
+            $isValidResponse = is_array($workflows) || $workflows instanceof Collection;
 
             $this->results['api_response'] = [
-                'status' => $isArray ? 'ok' : 'warning',
-                'message' => $isArray ? 'API responses are valid' : 'Unexpected response format',
+                'status' => $isValidResponse ? 'ok' : 'warning',
+                'message' => $isValidResponse ? 'API responses are valid' : 'Unexpected response format',
             ];
         } catch (\Exception $e) {
             $this->results['api_response'] = [
@@ -66,7 +67,7 @@ class HealthCheck
     {
         try {
             $workflows = N8nClient::workflows()->list(['limit' => 10]);
-            $workflowsArray = is_array($workflows) ? $workflows : $workflows->toArray();
+            $workflowsArray = collect($workflows)->toArray();
             $count = count($workflowsArray['data'] ?? $workflowsArray);
 
             $this->results['workflows_access'] = [

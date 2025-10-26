@@ -24,7 +24,7 @@ class Variables extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/variables', $payload);
 
         $this->dispatchResourceEvent(new VariableCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;

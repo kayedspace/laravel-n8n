@@ -9,6 +9,7 @@ use KayedSpace\N8n\Concerns\HasPagination;
 use KayedSpace\N8n\Enums\RequestMethod;
 use KayedSpace\N8n\Events\CredentialCreated;
 use KayedSpace\N8n\Events\CredentialDeleted;
+use KayedSpace\N8n\Events\CredentialTransferred;
 
 class Credentials extends AbstractApi
 {
@@ -22,7 +23,7 @@ class Credentials extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/credentials', $payload);
 
         $this->dispatchResourceEvent(new CredentialCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -77,8 +78,16 @@ class Credentials extends AbstractApi
      */
     public function transfer(string $id, string $destinationProjectId): Collection|array
     {
-        return $this->request(RequestMethod::Put, "/credentials/{$id}/transfer", [
+        $result = $this->request(RequestMethod::Put, "/credentials/{$id}/transfer", [
             'destinationProjectId' => $destinationProjectId,
         ]);
+
+        $this->dispatchResourceEvent(new CredentialTransferred(
+            $id,
+            $destinationProjectId,
+            $this->asArray($result)
+        ));
+
+        return $result;
     }
 }

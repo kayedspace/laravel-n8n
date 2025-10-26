@@ -36,7 +36,7 @@ class Executions extends AbstractApi
         $result = $this->request(RequestMethod::Get, "/executions/{$id}", ['includeData' => $includeData]);
 
         // Dispatch appropriate event based on status
-        $resultArray = is_array($result) ? $result : $result->toArray();
+        $resultArray = $this->asArray($result);
         $status = $resultArray['status'] ?? null;
 
         if ($status === 'success') {
@@ -96,7 +96,7 @@ class Executions extends AbstractApi
 
         while (true) {
             $execution = $this->get($id, true);
-            $executionArray = is_array($execution) ? $execution : $execution->toArray();
+            $executionArray = $this->asArray($execution);
             $status = $executionArray['status'] ?? 'unknown';
 
             // Check if execution is complete

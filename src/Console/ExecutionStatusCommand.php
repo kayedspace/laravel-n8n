@@ -19,7 +19,7 @@ class ExecutionStatusCommand extends Command
 
         try {
             $execution = N8nClient::executions()->get($id, true);
-            $executionArray = is_array($execution) ? $execution : $execution->toArray();
+            $executionArray = collect($execution)->toArray();
 
             $status = $executionArray['status'] ?? 'unknown';
             $mode = $executionArray['mode'] ?? 'N/A';

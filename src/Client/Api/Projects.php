@@ -10,6 +10,9 @@ use KayedSpace\N8n\Enums\RequestMethod;
 use KayedSpace\N8n\Events\ProjectCreated;
 use KayedSpace\N8n\Events\ProjectDeleted;
 use KayedSpace\N8n\Events\ProjectUpdated;
+use KayedSpace\N8n\Events\ProjectUserRemoved;
+use KayedSpace\N8n\Events\ProjectUserRoleChanged;
+use KayedSpace\N8n\Events\ProjectUsersAdded;
 
 class Projects extends AbstractApi
 {
@@ -24,7 +27,7 @@ class Projects extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/projects', $payload);
 
         $this->dispatchResourceEvent(new ProjectCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -70,7 +73,13 @@ class Projects extends AbstractApi
      */
     public function addUsers(string $projectId, array $relations): void
     {
-        $this->request(RequestMethod::Post, "/projects/{$projectId}/users", ['relations' => $relations]);
+        $result = $this->request(RequestMethod::Post, "/projects/{$projectId}/users", ['relations' => $relations]);
+
+        $this->dispatchResourceEvent(new ProjectUsersAdded(
+            $projectId,
+            $relations,
+            $this->asArray($result)
+        ));
     }
 
     /**
@@ -79,7 +88,14 @@ class Projects extends AbstractApi
      */
     public function changeUserRole(string $projectId, string $userId, string $role): void
     {
-        $this->request(RequestMethod::Patch, "/projects/{$projectId}/users/{$userId}", ['role' => $role]);
+        $result = $this->request(RequestMethod::Patch, "/projects/{$projectId}/users/{$userId}", ['role' => $role]);
+
+        $this->dispatchResourceEvent(new ProjectUserRoleChanged(
+            $projectId,
+            $userId,
+            $role,
+            $this->asArray($result)
+        ));
     }
 
     /**
@@ -88,6 +104,12 @@ class Projects extends AbstractApi
      */
     public function removeUser(string $projectId, string $userId): void
     {
-        $this->request(RequestMethod::Delete, "/projects/{$projectId}/users/{$userId}");
+        $result = $this->request(RequestMethod::Delete, "/projects/{$projectId}/users/{$userId}");
+
+        $this->dispatchResourceEvent(new ProjectUserRemoved(
+            $projectId,
+            $userId,
+            $this->asArray($result)
+        ));
     }
 }

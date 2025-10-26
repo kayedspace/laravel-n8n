@@ -135,16 +135,14 @@ class WorkflowBuilder
     public function save(): array
     {
         $workflow = N8nClient::workflows()->create($this->toArray());
+        $workflowArray = collect($workflow)->toArray();
 
         // Set project if specified
-        if ($this->projectId && is_array($workflow)) {
-            $workflowId = $workflow['id'] ?? null;
-            if ($workflowId) {
-                N8nClient::workflows()->transfer($workflowId, $this->projectId);
-            }
+        if ($this->projectId && ($workflowArray['id'] ?? null)) {
+            N8nClient::workflows()->transfer($workflowArray['id'], $this->projectId);
         }
 
-        return is_array($workflow) ? $workflow : $workflow->toArray();
+        return $workflowArray;
     }
 
     public function saveAndActivate(): array

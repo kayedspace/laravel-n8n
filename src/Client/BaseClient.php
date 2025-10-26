@@ -239,7 +239,13 @@ abstract class BaseClient
         if ($method === RequestMethod::Get && $this->shouldUseCache()) {
             $cached = $this->getFromCache($method, $uri, $data);
             if ($cached !== null) {
-                $this->logRequest($method, $uri, $data, $cached, 200, microtime(true) - $startTime, true);
+                $duration = microtime(true) - $startTime;
+                $this->logRequest($method, $uri, $data, $cached, 200, $duration, true);
+                $this->trackMetrics($method, $uri, $duration, 200);
+
+                if ($eventDispatcher) {
+                    $eventDispatcher($method, $uri, $data, $cached, 200, $duration);
+                }
 
                 return $this->formatResponse($cached);
             }
@@ -327,5 +333,21 @@ abstract class BaseClient
         if (Config::get('n8n.events.enabled', true)) {
             Event::dispatch($event);
         }
+    }
+
+    /**
+     * Normalize collection/array responses to array.
+     */
+    protected function asArray(Collection|array|null $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if ($value instanceof Collection) {
+            return $value->toArray();
+        }
+
+        return $value ? (array) $value : [];
     }
 }

@@ -11,6 +11,8 @@ use KayedSpace\N8n\Events\WorkflowActivated;
 use KayedSpace\N8n\Events\WorkflowCreated;
 use KayedSpace\N8n\Events\WorkflowDeactivated;
 use KayedSpace\N8n\Events\WorkflowDeleted;
+use KayedSpace\N8n\Events\WorkflowTagsUpdated;
+use KayedSpace\N8n\Events\WorkflowTransferred;
 use KayedSpace\N8n\Events\WorkflowUpdated;
 
 class Workflows extends AbstractApi
@@ -26,7 +28,7 @@ class Workflows extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/workflows', $payload);
 
         $this->dispatchResourceEvent(new WorkflowCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -60,7 +62,7 @@ class Workflows extends AbstractApi
         $result = $this->request(RequestMethod::Put, "/workflows/{$id}", $payload);
 
         $this->dispatchResourceEvent(new WorkflowUpdated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -89,7 +91,7 @@ class Workflows extends AbstractApi
 
         $this->dispatchResourceEvent(new WorkflowActivated(
             $id,
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -105,7 +107,7 @@ class Workflows extends AbstractApi
 
         $this->dispatchResourceEvent(new WorkflowDeactivated(
             $id,
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -117,9 +119,17 @@ class Workflows extends AbstractApi
      */
     public function transfer(string $id, string $destinationProjectId): Collection|array
     {
-        return $this->request(RequestMethod::Put, "/workflows/{$id}/transfer", [
+        $result = $this->request(RequestMethod::Put, "/workflows/{$id}/transfer", [
             'destinationProjectId' => $destinationProjectId,
         ]);
+
+        $this->dispatchResourceEvent(new WorkflowTransferred(
+            $id,
+            $destinationProjectId,
+            $this->asArray($result)
+        ));
+
+        return $result;
     }
 
     /**
@@ -137,7 +147,15 @@ class Workflows extends AbstractApi
      */
     public function updateTags(string $id, array $tagIds): Collection|array
     {
-        return $this->request(RequestMethod::Put, "/workflows/{$id}/tags", $tagIds);
+        $result = $this->request(RequestMethod::Put, "/workflows/{$id}/tags", $tagIds);
+
+        $this->dispatchResourceEvent(new WorkflowTagsUpdated(
+            $id,
+            $tagIds,
+            $this->asArray($result)
+        ));
+
+        return $result;
     }
 
     /**
@@ -207,7 +225,7 @@ class Workflows extends AbstractApi
         foreach ($ids as $id) {
             try {
                 $workflow = $this->get($id);
-                $workflows[] = is_array($workflow) ? $workflow : $workflow->toArray();
+                $workflows[] = $this->asArray($workflow);
             } catch (\Exception $e) {
                 // Skip failed exports
             }

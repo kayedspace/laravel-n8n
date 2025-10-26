@@ -1,8 +1,18 @@
 <?php
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\ApiRequestCompleted;
+use KayedSpace\N8n\Events\WorkflowActivated;
+use KayedSpace\N8n\Events\WorkflowCreated;
+use KayedSpace\N8n\Events\WorkflowDeactivated;
+use KayedSpace\N8n\Events\WorkflowDeleted;
+use KayedSpace\N8n\Events\WorkflowTagsUpdated;
+use KayedSpace\N8n\Events\WorkflowTransferred;
+use KayedSpace\N8n\Events\WorkflowUpdated;
 use KayedSpace\N8n\Facades\N8nClient;
 
 it('creates a workflow', function () {
@@ -194,6 +204,90 @@ it('imports workflows', function () {
         ->and($results[1]['success'])->toBeTrue();
 
     Http::assertSentCount(2);
+});
+
+it('dispatches workflow transferred event', function () {
+    Event::fake([WorkflowTransferred::class]);
+    Http::fake(fn () => Http::response(['id' => 'wf1'], 200));
+
+    N8nClient::workflows()->transfer('wf1', 'proj-1');
+
+    Event::assertDispatched(WorkflowTransferred::class, function ($event) {
+        return $event->data['id'] === 'wf1'
+            && $event->data['destination_project_id'] === 'proj-1';
+    });
+});
+
+it('dispatches workflow tags updated event', function () {
+    Event::fake([WorkflowTagsUpdated::class]);
+    Http::fake(fn () => Http::response(['tags' => ['t1']], 200));
+
+    N8nClient::workflows()->updateTags('wf1', ['t1', 't2']);
+
+    Event::assertDispatched(WorkflowTagsUpdated::class, function ($event) {
+        return $event->data['id'] === 'wf1'
+            && $event->data['tags'] === ['t1', 't2'];
+    });
+});
+
+it('dispatches workflow created event', function () {
+    Event::fake([WorkflowCreated::class]);
+    Http::fake(fn () => Http::response(['id' => 'wf-created'], 201));
+
+    N8nClient::workflows()->create(['name' => 'wf-created']);
+
+    Event::assertDispatched(WorkflowCreated::class, fn ($event) => $event->data['id'] === 'wf-created');
+});
+
+it('dispatches workflow updated event', function () {
+    Event::fake([WorkflowUpdated::class]);
+    Http::fake(fn () => Http::response(['id' => 'wf1', 'name' => 'updated'], 200));
+
+    N8nClient::workflows()->update('wf1', ['name' => 'updated']);
+
+    Event::assertDispatched(WorkflowUpdated::class, fn ($event) => $event->data['name'] === 'updated');
+});
+
+it('dispatches workflow activated event', function () {
+    Event::fake([WorkflowActivated::class]);
+    Http::fake(fn () => Http::response(['active' => true], 200));
+
+    N8nClient::workflows()->activate('wf1');
+
+    Event::assertDispatched(WorkflowActivated::class, fn ($event) => $event->data['id'] === 'wf1');
+});
+
+it('dispatches workflow deactivated event', function () {
+    Event::fake([WorkflowDeactivated::class]);
+    Http::fake(fn () => Http::response(['active' => false], 200));
+
+    N8nClient::workflows()->deactivate('wf1');
+
+    Event::assertDispatched(WorkflowDeactivated::class, fn ($event) => $event->data['id'] === 'wf1');
+});
+
+it('dispatches workflow deleted event', function () {
+    Event::fake([WorkflowDeleted::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::workflows()->delete('wf1');
+
+    Event::assertDispatched(WorkflowDeleted::class, fn ($event) => $event->data['id'] === 'wf1');
+});
+
+it('dispatches api request events for cached responses', function () {
+    Event::fake([ApiRequestCompleted::class]);
+    Config::set('n8n.cache.enabled', true);
+    Config::set('n8n.cache.store', 'array');
+    Cache::store('array')->flush();
+
+    Http::fake(fn () => Http::response(['id' => 'wf-cache'], 200));
+
+    N8nClient::workflows()->get('wf-cache');
+    N8nClient::workflows()->get('wf-cache');
+
+    Http::assertSentCount(1);
+    Event::assertDispatchedTimes(ApiRequestCompleted::class, 2);
 });
 
 it('auto-paginates all workflows', function () {

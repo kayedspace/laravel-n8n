@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\TagCreated;
+use KayedSpace\N8n\Events\TagDeleted;
+use KayedSpace\N8n\Events\TagUpdated;
 use KayedSpace\N8n\Facades\N8nClient;
 
 it('creates a tag', function () {
@@ -88,6 +92,33 @@ it('deletes a tag', function () {
         fn ($req) => RequestMethod::Delete->is($req->method()) &&
         $req->url() === "{$url}/tags/t1"
     );
+});
+
+it('dispatches tag created event', function () {
+    Event::fake([TagCreated::class]);
+    Http::fake(fn () => Http::response(['id' => 'tag-created'], 201));
+
+    N8nClient::tags()->create(['name' => 'Created']);
+
+    Event::assertDispatched(TagCreated::class, fn ($event) => $event->data['id'] === 'tag-created');
+});
+
+it('dispatches tag updated event', function () {
+    Event::fake([TagUpdated::class]);
+    Http::fake(fn () => Http::response(['id' => 'tag-1', 'name' => 'Updated'], 200));
+
+    N8nClient::tags()->update('tag-1', ['name' => 'Updated']);
+
+    Event::assertDispatched(TagUpdated::class, fn ($event) => $event->data['name'] === 'Updated');
+});
+
+it('dispatches tag deleted event', function () {
+    Event::fake([TagDeleted::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::tags()->delete('tag-1');
+
+    Event::assertDispatched(TagDeleted::class, fn ($event) => $event->data['id'] === 'tag-1');
 });
 
 it('creates many tags', function () {

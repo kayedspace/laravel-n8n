@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\CredentialCreated;
+use KayedSpace\N8n\Events\CredentialDeleted;
+use KayedSpace\N8n\Events\CredentialTransferred;
 use KayedSpace\N8n\Facades\N8nClient;
 
 it('creates credentials', function () {
@@ -90,6 +94,7 @@ it('gets credential schema', function () {
 });
 
 it('transfers a credential', function () {
+    Event::fake([CredentialTransferred::class]);
     Http::fake(fn () => Http::response(['ok' => true], 200));
 
     N8nClient::credentials()->transfer('1', 'dest');
@@ -101,4 +106,27 @@ it('transfers a credential', function () {
         && $r->url() === "{$url}/credentials/1/transfer"
         && $r['destinationProjectId'] === 'dest'
     );
+
+    Event::assertDispatched(CredentialTransferred::class, function ($event) {
+        return $event->data['id'] === '1'
+            && $event->data['destination_project_id'] === 'dest';
+    });
+});
+
+it('dispatches credential created event', function () {
+    Event::fake([CredentialCreated::class]);
+    Http::fake(fn () => Http::response(['id' => 'cred-created'], 201));
+
+    N8nClient::credentials()->create(['name' => 'Test']);
+
+    Event::assertDispatched(CredentialCreated::class, fn ($event) => $event->data['id'] === 'cred-created');
+});
+
+it('dispatches credential deleted event', function () {
+    Event::fake([CredentialDeleted::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::credentials()->delete('cred-1');
+
+    Event::assertDispatched(CredentialDeleted::class, fn ($event) => $event->data['id'] === 'cred-1');
 });

@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
+use KayedSpace\N8n\Events\VariableCreated;
+use KayedSpace\N8n\Events\VariableDeleted;
+use KayedSpace\N8n\Events\VariableUpdated;
 use KayedSpace\N8n\Facades\N8nClient;
 
 it('creates a variable', function () {
@@ -106,4 +110,31 @@ it('deletes many variables', function () {
         ->and($results['var3']['success'])->toBeTrue();
 
     Http::assertSentCount(3);
+});
+
+it('dispatches variable created event', function () {
+    Event::fake([VariableCreated::class]);
+    Http::fake(fn () => Http::response(['id' => 'var-created'], 201));
+
+    N8nClient::variables()->create(['key' => 'KEY', 'value' => 'VALUE']);
+
+    Event::assertDispatched(VariableCreated::class, fn ($event) => $event->data['id'] === 'var-created');
+});
+
+it('dispatches variable updated event', function () {
+    Event::fake([VariableUpdated::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::variables()->update('var-1', ['value' => 'updated']);
+
+    Event::assertDispatched(VariableUpdated::class, fn ($event) => $event->data['id'] === 'var-1');
+});
+
+it('dispatches variable deleted event', function () {
+    Event::fake([VariableDeleted::class]);
+    Http::fake(fn () => Http::response([], 204));
+
+    N8nClient::variables()->delete('var-1');
+
+    Event::assertDispatched(VariableDeleted::class, fn ($event) => $event->data['id'] === 'var-1');
 });

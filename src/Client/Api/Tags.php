@@ -24,7 +24,7 @@ class Tags extends AbstractApi
         $result = $this->request(RequestMethod::Post, '/tags', $payload);
 
         $this->dispatchResourceEvent(new TagCreated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
@@ -60,7 +60,7 @@ class Tags extends AbstractApi
         $result = $this->request(RequestMethod::Put, "/tags/{$id}", $payload);
 
         $this->dispatchResourceEvent(new TagUpdated(
-            is_array($result) ? $result : $result->toArray()
+            $this->asArray($result)
         ));
 
         return $result;
