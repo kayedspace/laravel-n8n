@@ -112,13 +112,13 @@ $response = N8nClient::webhooks()
 Queue webhook triggers for background processing:
 
 ```php
-// Enable in .env: N8N_QUEUE_ENABLED=true
-
 // Queue the webhook (returns immediately)
 N8nClient::webhooks()->async()->request('/my-webhook', $data);
 
 // Force synchronous (default)
 N8nClient::webhooks()->sync()->request('/my-webhook', $data);
+
+> Configure queue behaviour via `N8N_QUEUE_ENABLED`, `N8N_QUEUE_CONNECTION`, and `N8N_QUEUE_NAME` in your `.env` file.
 ```
 
 ### Webhook Signature Verification
@@ -452,26 +452,36 @@ $imported = N8nClient::workflows()->import($exported);
 
 ### 📊 Events System
 
-Listen to n8n operations throughout your Laravel application:
+Every mutating request (create/update/delete/transfer/role-change, etc.) dispatches a strongly-typed Laravel event so you can observe n8n activity in real time. Cached reads still trigger the `ApiRequestCompleted` event, so metrics and listeners remain consistent even when responses are served from cache.
+
+**Available events**
+
+| Resource    | Events Fired                                                                                 |
+|-------------|-----------------------------------------------------------------------------------------------|
+| API Client  | `ApiRequestCompleted`, `RateLimitEncountered`                                                 |
+| Workflows   | `WorkflowCreated`, `WorkflowUpdated`, `WorkflowDeleted`, `WorkflowActivated`, `WorkflowDeactivated`, `WorkflowTransferred`, `WorkflowTagsUpdated` |
+| Executions  | `ExecutionCompleted`, `ExecutionFailed`, `ExecutionDeleted`                                   |
+| Credentials | `CredentialCreated`, `CredentialDeleted`, `CredentialTransferred`                             |
+| Projects    | `ProjectCreated`, `ProjectUpdated`, `ProjectDeleted`, `ProjectUsersAdded`, `ProjectUserRoleChanged`, `ProjectUserRemoved` |
+| Users       | `UserCreated`, `UserDeleted`, `UserRoleChanged`                                               |
+| Variables   | `VariableCreated`, `VariableUpdated`, `VariableDeleted`                                       |
+| Tags        | `TagCreated`, `TagUpdated`, `TagDeleted`                                                      |
+| Webhooks    | `WebhookTriggered` (sync and queued)                                                          |
+
+Register listeners just like any other Laravel event:
 
 ```php
 // In EventServiceProvider
-use KayedSpace\N8n\Events\{
-    WorkflowCreated, WorkflowUpdated, WorkflowDeleted,
-    WorkflowActivated, WorkflowDeactivated,
-    ExecutionCompleted, ExecutionFailed, ExecutionDeleted,
-    WebhookTriggered, ApiRequestCompleted, RateLimitEncountered
-};
+use KayedSpace\N8n\Events\WorkflowCreated;
+use KayedSpace\N8n\Events\WebhookTriggered;
 
 protected $listen = [
     WorkflowCreated::class => [LogWorkflowActivity::class],
-    ExecutionFailed::class => [SendFailureAlert::class, LogToSlack::class],
     WebhookTriggered::class => [TrackWebhookUsage::class],
-    RateLimitEncountered::class => [SendAdminAlert::class],
 ];
 ```
 
-Events can be enabled/disabled via config:
+Events can be enabled or disabled in config:
 
 ```php
 // config/n8n.php or .env
@@ -495,6 +505,18 @@ $workflow = N8nClient::workflows()->fresh()->get($id);
 ```
 
 Cache is automatically invalidated on create/update/delete operations.
+
+### 📈 Metrics
+
+Enable lightweight request metrics that are incremented during every API call (including cache hits when caching is enabled):
+
+```php
+// config/n8n.php or .env
+N8N_METRICS_ENABLED=true
+N8N_METRICS_STORE=redis   # Any Laravel cache store
+```
+
+Metrics are grouped per hour and include total requests, counts per HTTP method, status code, and average duration. Consume them from your chosen cache store to drive dashboards or alerts.
 
 ### 📝 Logging
 
@@ -832,4 +854,3 @@ If you encounter any issues or have questions:
 ## 📄 License
 
 This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
