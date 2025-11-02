@@ -3,7 +3,7 @@
 namespace KayedSpace\N8n\Testing;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Config;
+use PHPUnit\Framework\AssertionFailedError;
 
 class N8nFake
 {
@@ -87,7 +87,7 @@ class N8nFake
         ]);
     }
 
-    public static function assertWorkflowCreated(callable $callback = null): void
+    public static function assertWorkflowCreated(?callable $callback = null): void
     {
         static::assertSent(function ($request) use ($callback) {
             $isWorkflowCreate = str_contains($request['url'], '/workflows')
@@ -128,7 +128,7 @@ class N8nFake
         }
 
         if (! $found) {
-            throw new \PHPUnit\Framework\AssertionFailedError('Expected request was not sent');
+            throw new AssertionFailedError('Expected request was not sent');
         }
     }
 
@@ -136,7 +136,7 @@ class N8nFake
     {
         foreach (static::$requests as $request) {
             if ($callback($request)) {
-                throw new \PHPUnit\Framework\AssertionFailedError('Unexpected request was sent');
+                throw new AssertionFailedError('Unexpected request was sent');
             }
         }
     }
@@ -146,7 +146,7 @@ class N8nFake
         $actual = count(static::$requests);
 
         if ($actual !== $count) {
-            throw new \PHPUnit\Framework\AssertionFailedError(
+            throw new AssertionFailedError(
                 "Expected {$count} requests, but {$actual} were sent"
             );
         }

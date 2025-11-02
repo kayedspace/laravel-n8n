@@ -2,6 +2,7 @@
 
 namespace KayedSpace\N8n\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use KayedSpace\N8n\Facades\N8nClient;
 
@@ -23,8 +24,9 @@ class ActivateWorkflowCommand extends Command
             $this->info("✓ Workflow {$id} activated successfully");
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Failed to activate workflow: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

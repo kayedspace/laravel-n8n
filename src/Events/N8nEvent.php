@@ -14,6 +14,5 @@ abstract class N8nEvent
         public readonly string $action,
         public readonly array $data = [],
         public readonly ?array $context = null
-    ) {
-    }
+    ) {}
 }

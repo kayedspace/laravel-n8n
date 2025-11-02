@@ -2,6 +2,7 @@
 
 namespace KayedSpace\N8n\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use KayedSpace\N8n\Facades\N8nClient;
 
@@ -20,11 +21,12 @@ class TestWebhookCommand extends Command
 
         if ($dataJson && json_last_error() !== JSON_ERROR_NONE) {
             $this->error('Invalid JSON data provided');
+
             return self::FAILURE;
         }
 
         $this->info("Triggering webhook: {$path}");
-        $this->info("Data: ".json_encode($data, JSON_PRETTY_PRINT));
+        $this->info('Data: '.json_encode($data, JSON_PRETTY_PRINT));
 
         try {
             $response = N8nClient::webhooks()->request($path, $data);
@@ -34,8 +36,9 @@ class TestWebhookCommand extends Command
             $this->line(json_encode(collect($response)->toArray(), JSON_PRETTY_PRINT));
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Failed to trigger webhook: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

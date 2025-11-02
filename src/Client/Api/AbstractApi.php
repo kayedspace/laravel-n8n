@@ -9,14 +9,10 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use KayedSpace\N8n\Client\BaseClient;
 use KayedSpace\N8n\Enums\RequestMethod;
 use KayedSpace\N8n\Events\ApiRequestCompleted;
 use KayedSpace\N8n\Events\RateLimitEncountered;
-use KayedSpace\N8n\Exceptions\AuthenticationException;
-use KayedSpace\N8n\Exceptions\N8nException;
-use KayedSpace\N8n\Exceptions\RateLimitException;
 
 abstract class AbstractApi extends BaseClient
 {
@@ -116,8 +112,6 @@ abstract class AbstractApi extends BaseClient
             }
         }
     }
-
-
 
     private function prepareQuery(array $data): array
     {

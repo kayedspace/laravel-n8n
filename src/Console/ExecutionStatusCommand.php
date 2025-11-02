@@ -2,6 +2,7 @@
 
 namespace KayedSpace\N8n\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use KayedSpace\N8n\Facades\N8nClient;
 
@@ -41,8 +42,9 @@ class ExecutionStatusCommand extends Command
             }
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Failed to fetch execution: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

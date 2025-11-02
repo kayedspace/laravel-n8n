@@ -4,13 +4,13 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use KayedSpace\N8n\Enums\RequestMethod;
-use KayedSpace\N8n\Facades\N8nClient;
 use KayedSpace\N8n\Events\ProjectCreated;
 use KayedSpace\N8n\Events\ProjectDeleted;
 use KayedSpace\N8n\Events\ProjectUpdated;
 use KayedSpace\N8n\Events\ProjectUserRemoved;
 use KayedSpace\N8n\Events\ProjectUserRoleChanged;
 use KayedSpace\N8n\Events\ProjectUsersAdded;
+use KayedSpace\N8n\Facades\N8nClient;
 
 it('creates a project', function () {
     Http::fake(fn () => Http::response(['id' => 'p1'], 201));

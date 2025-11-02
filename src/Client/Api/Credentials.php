@@ -14,6 +14,7 @@ use KayedSpace\N8n\Events\CredentialTransferred;
 class Credentials extends AbstractApi
 {
     use HasPagination;
+
     /**
      * @throws ConnectionException
      * @throws RequestException

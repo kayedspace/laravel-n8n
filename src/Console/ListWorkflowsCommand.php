@@ -2,6 +2,7 @@
 
 namespace KayedSpace\N8n\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use KayedSpace\N8n\Facades\N8nClient;
 
@@ -27,6 +28,7 @@ class ListWorkflowsCommand extends Command
 
             if (empty($workflows)) {
                 $this->warn('No workflows found');
+
                 return self::SUCCESS;
             }
 
@@ -42,8 +44,9 @@ class ListWorkflowsCommand extends Command
             $this->table(['ID', 'Name', 'Active'], $rows);
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to list workflows: '.$e->getMessage());
+
             return self::FAILURE;
         }
     }
