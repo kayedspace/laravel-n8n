@@ -312,13 +312,13 @@ abstract class BaseClient
             Log::channel($channel)->error("N8n {$context} failed", [
                 'method' => $method->value,
                 'uri' => $uri,
-                'status' => $response?->status(),
-                'response' => $response?->json(),
+                'status' => $response->status(),
+                'response' => $response->json(),
             ]);
         }
 
         // Convert to domain exception
-        throw match ($response?->status()) {
+        throw match ($response->status()) {
             401, 403 => AuthenticationException::fromResponse($response, 'Authentication failed'),
             429 => RateLimitException::fromResponse($response),
             default => N8nException::fromResponse($response, '', ['method' => $method->value, 'uri' => $uri, 'data' => $data, 'context' => $context]),
