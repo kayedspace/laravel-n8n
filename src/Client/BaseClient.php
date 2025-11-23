@@ -348,6 +348,6 @@ abstract class BaseClient
             return $value->toArray();
         }
 
-        return $value ? (array) $value : [];
+        return [];
     }
 }
