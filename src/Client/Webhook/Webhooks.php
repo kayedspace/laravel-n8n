@@ -65,7 +65,7 @@ class Webhooks extends BaseClient
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function request($path, array $data = []): Collection|array|null
+    public function request(string $path, array $data = []): Collection|array|null
     {
         // If async and queue enabled, dispatch to queue
         if ($this->async && Config::get('n8n.queue.enabled')) {

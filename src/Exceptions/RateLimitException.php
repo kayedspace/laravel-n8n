@@ -2,6 +2,8 @@
 
 namespace KayedSpace\N8n\Exceptions;
 
+use Illuminate\Http\Client\Response;
+
 class RateLimitException extends N8nException
 {
     protected int $retryAfter = 0;
@@ -18,7 +20,7 @@ class RateLimitException extends N8nException
         return $this->retryAfter;
     }
 
-    public static function fromResponse($response, string $message = '', array $context = []): static
+    public static function fromResponse(Response $response, string $message = '', array $context = []): static
     {
         $exception = parent::fromResponse($response, $message ?: 'Rate limit exceeded', $context);
 
