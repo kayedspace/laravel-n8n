@@ -14,7 +14,7 @@ class ExecutionStatusCommand extends Command
 
     public function handle(): int
     {
-        $id = $this->argument('id');
+        $id = (int) $this->argument('id');
 
         $this->info("Fetching execution {$id}...");
 
