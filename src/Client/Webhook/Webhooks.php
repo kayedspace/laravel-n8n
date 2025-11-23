@@ -107,7 +107,7 @@ class Webhooks extends BaseClient
      */
     public static function verifySignature(Request $request, ?string $secret = null): bool
     {
-        $secret = $secret ?? Config::get('n8n.webhook.signature_key');
+        $secret = $secret ?? Config::string('n8n.webhook.signature_key');
 
         if (! $secret) {
             return false;
