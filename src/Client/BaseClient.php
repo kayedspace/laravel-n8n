@@ -205,7 +205,7 @@ abstract class BaseClient
      */
     protected function getCacheTag(string $uri): string
     {
-        $resource = explode('/', trim($uri, '/'))[0] ?? 'general';
+        $resource = explode('/', trim($uri, '/'))[0] ?: 'general';
 
         return 'n8n:'.$resource;
     }

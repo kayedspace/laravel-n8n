@@ -99,7 +99,7 @@ abstract class AbstractApi extends BaseClient
     protected function handleRateLimiting(Response $response, string $uri): void
     {
         if ($response->status() === 429 && Config::get('n8n.rate_limiting.auto_wait', true)) {
-            $retryAfter = (int) ($response->header('Retry-After') ?? 1);
+            $retryAfter = ((int) $response->header('Retry-After')) ?: 1;
             $maxWait = Config::get('n8n.rate_limiting.max_wait', 60);
 
             if ($retryAfter <= $maxWait) {
