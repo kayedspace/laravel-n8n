@@ -1,0 +1,46 @@
+name: run PHPStan Static Analysis
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - '.github/workflows/phpstan.yml'
+      - 'phpstan.neon'
+      - 'composer.json'
+  pull_request:
+    branches: ['main']
+    paths:
+      - '**.php'
+      - 'phpstan.neon'
+  merge_group:
+    branches: ['main']
+
+jobs:
+  phpstan:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu-latest ]
+        php: [ 8.3, 8.4 ]
+
+    name: PHPStan Analysis P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=2G --error-format=github
