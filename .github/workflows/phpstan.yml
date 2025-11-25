@@ -26,7 +26,7 @@ jobs:
         os: [ ubuntu-latest ]
         php: [ 8.3, 8.4 ]
 
-    name: PHPStan Analysis P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
