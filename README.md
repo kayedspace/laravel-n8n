@@ -187,7 +187,7 @@ invoked by an account with owner privileges.
 | Method Signature                                     | HTTP Method & Path                   | Description                                            |
 |------------------------------------------------------|--------------------------------------|--------------------------------------------------------|
 | `create(array $payload)`                             | `POST /credentials`                  | Create a credential using the appropriate type schema. |
-| `list(int $limit = 100, ?string $cursor = null)`     | `GET /credentials`                   | List stored credentials with optional pagination.      |
+| `list(array $filters = [])`                          | `GET /credentials`                   | List stored credentials with optional pagination.      |
 | `all(array $filters = [])`                           | `GET /credentials`                   | Auto-paginate and retrieve all credentials.            |
 | `listIterator(array $filters = [])`                  | `GET /credentials`                   | Memory-efficient generator for iterating credentials.  |
 | `get(string $id)`                                    | `GET /credentials/{id}`              | Retrieve details of a specific credential by ID.       |
@@ -255,7 +255,7 @@ $results = N8nClient::executions()->deleteMany([101, 102, 103]);
 | Method Signature                                                  | HTTP Method & Path                            | Description                                                            |
 |-------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------|
 | `create(array $payload)`                                          | `POST /projects`                              | Create a new project with name, description, etc.                      |
-| `list(int $limit = 100, ?string $cursor = null)`                  | `GET /projects`                               | Retrieve a paginated list of projects.                                 |
+| `list(array $filters = [])`                                       | `GET /projects`                               | Retrieve a paginated list of projects.                                 |
 | `all(array $filters = [])`                                        | `GET /projects`                               | Auto-paginate and retrieve all projects.                               |
 | `listIterator(array $filters = [])`                               | `GET /projects`                               | Memory-efficient generator for iterating through all projects.         |
 | `update(string $projectId, array $payload)`                       | `PUT /projects/{projectId}`                   | Update project name or metadata. Returns 204 No Content on success.    |
@@ -303,17 +303,17 @@ $syncStatus = N8nClient::sourceControl()->pull([
 
 ### 🏷️ Tags
 
-| Method Signature                                 | HTTP Method & Path  | Description                                                |
-|--------------------------------------------------|---------------------|------------------------------------------------------------|
-| `create(array $payload)`                         | `POST /tags`        | Create a new tag with the given name or properties.        |
-| `list(int $limit = 100, ?string $cursor = null)` | `GET /tags`         | List all tags with optional pagination using limit/cursor. |
-| `all(array $filters = [])`                       | `GET /tags`         | Auto-paginate and retrieve all tags.                       |
-| `listIterator(array $filters = [])`              | `GET /tags`         | Memory-efficient generator for iterating through all tags. |
-| `get(string $id)`                                | `GET /tags/{id}`    | Retrieve a single tag by its ID.                           |
-| `update(string $id, array $payload)`             | `PUT /tags/{id}`    | Update the name or properties of a specific tag.           |
-| `delete(string $id)`                             | `DELETE /tags/{id}` | Delete a tag permanently by its ID.                        |
-| `createMany(array $tags)`                        | `POST /tags`        | Create multiple tags. Returns results with success/error.  |
-| `deleteMany(array $ids)`                         | `DELETE /tags/{id}` | Delete multiple tags. Returns results with success/error.  |
+| Method Signature                     | HTTP Method & Path  | Description                                                |
+|--------------------------------------|---------------------|------------------------------------------------------------|
+| `create(array $payload)`             | `POST /tags`        | Create a new tag with the given name or properties.        |
+| `list(array $filters = [])`          | `GET /tags`         | List all tags with optional pagination using limit/cursor. |
+| `all(array $filters = [])`           | `GET /tags`         | Auto-paginate and retrieve all tags.                       |
+| `listIterator(array $filters = [])`  | `GET /tags`         | Memory-efficient generator for iterating through all tags. |
+| `get(string $id)`                    | `GET /tags/{id}`    | Retrieve a single tag by its ID.                           |
+| `update(string $id, array $payload)` | `PUT /tags/{id}`    | Update the name or properties of a specific tag.           |
+| `delete(string $id)`                 | `DELETE /tags/{id}` | Delete a tag permanently by its ID.                        |
+| `createMany(array $tags)`            | `POST /tags`        | Create multiple tags. Returns results with success/error.  |
+| `deleteMany(array $ids)`             | `DELETE /tags/{id}` | Delete multiple tags. Returns results with success/error.  |
 
 **Examples:**
 
@@ -370,16 +370,16 @@ N8nClient::users()->changeRole('dev@example.com', 'admin');
 
 ### 🔠 Variables
 
-| Method Signature                                 | HTTP Method & Path       | Description                                                     |
-|--------------------------------------------------|--------------------------|-----------------------------------------------------------------|
-| `create(array $payload)`                         | `POST /variables`        | Create a new variable with a key-value pair.                    |
-| `list(int $limit = 100, ?string $cursor = null)` | `GET /variables`         | List variables with optional pagination using limit and cursor. |
-| `all(array $filters = [])`                       | `GET /variables`         | Auto-paginate and retrieve all variables.                       |
-| `listIterator(array $filters = [])`              | `GET /variables`         | Memory-efficient generator for iterating through all variables. |
-| `update(string $id, array $payload)`             | `PUT /variables/{id}`    | Update the value of an existing variable.                       |
-| `delete(string $id)`                             | `DELETE /variables/{id}` | Permanently delete a variable.                                  |
-| `createMany(array $variables)`                   | `POST /variables`        | Create multiple variables. Returns results with success/error.  |
-| `deleteMany(array $ids)`                         | `DELETE /variables/{id}` | Delete multiple variables. Returns results with success/error.  |
+| Method Signature                     | HTTP Method & Path       | Description                                                     |
+|--------------------------------------|--------------------------|-----------------------------------------------------------------|
+| `create(array $payload)`             | `POST /variables`        | Create a new variable with a key-value pair.                    |
+| `list(array $filters = [])`          | `GET /variables`         | List variables with optional pagination using limit and cursor. |
+| `all(array $filters = [])`           | `GET /variables`         | Auto-paginate and retrieve all variables.                       |
+| `listIterator(array $filters = [])`  | `GET /variables`         | Memory-efficient generator for iterating through all variables. |
+| `update(string $id, array $payload)` | `PUT /variables/{id}`    | Update the value of an existing variable.                       |
+| `delete(string $id)`                 | `DELETE /variables/{id}` | Permanently delete a variable.                                  |
+| `createMany(array $variables)`       | `POST /variables`        | Create multiple variables. Returns results with success/error.  |
+| `deleteMany(array $ids)`             | `DELETE /variables/{id}` | Delete multiple variables. Returns results with success/error.  |
 
 **Examples:**
 
