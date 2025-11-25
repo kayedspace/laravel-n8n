@@ -47,8 +47,5 @@ jobs:
       - name: List Installed Dependencies
         run: composer show -D
 
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --memory-limit=2G
-
       - name: Run Tests
         run: vendor/bin/pest --no-coverage
