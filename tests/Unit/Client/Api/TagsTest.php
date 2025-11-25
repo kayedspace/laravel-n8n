@@ -29,7 +29,7 @@ it('creates a tag', function () {
 it('lists tags without cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::tags()->list(50);
+    N8nClient::tags()->list(['limit' => 50]);
 
     $url = Config::get('n8n.api.base_url');
 
@@ -42,7 +42,7 @@ it('lists tags without cursor', function () {
 it('lists tags with cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::tags()->list(25, 'abc');
+    N8nClient::tags()->list(['limit' => 25, 'cursor' => 'abc']);
 
     $url = Config::get('n8n.api.base_url');
 
