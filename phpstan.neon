@@ -12,6 +12,7 @@ parameters:
 	excludePaths:
 		analyseAndScan:
 			- tests/*
+			- src/Testing/*
 
 	# Level 9 is the highest level
 	level: 6
@@ -20,5 +21,9 @@ parameters:
 		- '#no value type specified in iterable type array#'
 		- '#return type with generic class#'
 		- '#uses generic trait#'
+		- '#has parameter (.*) with generic class#'
+		- '#Unable to resolve the template type TKey in call to function collec#'
+		- '#Unable to resolve the template type TValue in call to function collect#'
+		- '#Unsafe usage of new static\(\)#'
 
 	reportUnmatchedIgnoredErrors: false

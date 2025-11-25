@@ -30,11 +30,7 @@ class N8nException extends Exception
 
     public function getN8nErrorDetails(): ?array
     {
-        if ($this->response) {
-            return $this->response->json();
-        }
-
-        return null;
+        return $this->response?->json();
     }
 
     public static function fromResponse(Response $response, string $message = '', array $context = []): static

@@ -65,7 +65,7 @@ class Webhooks extends BaseClient
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function request($path, array $data = []): Collection|array|null
+    public function request(string $path, array $data = []): Collection|array|null
     {
         // If async and queue enabled, dispatch to queue
         if ($this->async && Config::get('n8n.queue.enabled')) {
@@ -107,7 +107,7 @@ class Webhooks extends BaseClient
      */
     public static function verifySignature(Request $request, ?string $secret = null): bool
     {
-        $secret = $secret ?? Config::get('n8n.webhook.signature_key');
+        $secret = $secret ?? Config::string('n8n.webhook.signature_key');
 
         if (! $secret) {
             return false;
