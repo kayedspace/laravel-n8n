@@ -69,7 +69,7 @@ abstract class BaseClient
             return null;
         }
 
-        if (Config::get('n8n.return_type') === 'collection') {
+        if (Config::get('n8n.return_type', 'collection') === 'collection') {
             return collect($data);
         }
 

@@ -20,8 +20,8 @@ abstract class AbstractApi extends BaseClient
     {
         parent::__construct($httpClient);
 
-        $baseUrl = Config::get('n8n.api.base_url');
-        $key = Config::get('n8n.api.key');
+        $baseUrl = (string) Config::get('n8n.api.base_url', '');
+        $key = (string) Config::get('n8n.api.key', '');
         $this->httpClient = $httpClient->baseUrl($baseUrl)->withHeaders([
             'X-N8N-API-KEY' => $key,
             'Accept' => 'application/json',

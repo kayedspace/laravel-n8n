@@ -34,12 +34,10 @@ class Credentials extends AbstractApi
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function list(int $limit = 100, ?string $cursor = null): Collection|array
+    public function list(array $filters = []): Collection|array
     {
-        return $this->request(RequestMethod::Get, '/credentials', array_filter([
-            'limit' => $limit,
-            'cursor' => $cursor,
-        ]));
+
+        return $this->request(RequestMethod::Get, '/credentials', $filters);
     }
 
     /**

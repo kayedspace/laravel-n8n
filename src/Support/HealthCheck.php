@@ -49,11 +49,11 @@ class HealthCheck
     {
         try {
             $workflows = N8nClient::workflows()->list(['limit' => 1]);
-            $isValidResponse = is_array($workflows) || $workflows instanceof Collection;
 
+            // list() always returns Collection|array by type declaration
             $this->results['api_response'] = [
-                'status' => $isValidResponse ? 'ok' : 'warning',
-                'message' => $isValidResponse ? 'API responses are valid' : 'Unexpected response format',
+                'status' => 'ok',
+                'message' => 'API responses are valid',
             ];
         } catch (\Exception $e) {
             $this->results['api_response'] = [

@@ -29,7 +29,7 @@ it('creates a variable', function () {
 it('lists variables without cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::variables()->list(50);
+    N8nClient::variables()->list(['limit' => 50]);
 
     $url = Config::get('n8n.api.base_url');
 
@@ -42,7 +42,7 @@ it('lists variables without cursor', function () {
 it('lists variables with cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::variables()->list(30, 'abc');
+    N8nClient::variables()->list(['limit' => 30, 'cursor' => 'abc']);
 
     $url = Config::get('n8n.api.base_url');
 

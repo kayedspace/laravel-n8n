@@ -32,7 +32,7 @@ it('creates a project', function () {
 it('lists projects without cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::projects()->list(50);
+    N8nClient::projects()->list(['limit' => 50]);
 
     $url = Config::get('n8n.api.base_url');
 
@@ -45,7 +45,7 @@ it('lists projects without cursor', function () {
 it('lists projects with cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::projects()->list(25, 'abc');
+    N8nClient::projects()->list(['limit' => 25, 'cursor' => 'abc']);
 
     $url = Config::get('n8n.api.base_url');
 

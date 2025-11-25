@@ -29,7 +29,7 @@ it('creates credentials', function () {
 it('lists credentials without cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::credentials()->list(50);
+    N8nClient::credentials()->list(['limit' => 50]);
 
     $url = Config::get('n8n.api.base_url');
 
@@ -42,7 +42,7 @@ it('lists credentials without cursor', function () {
 it('lists credentials with cursor', function () {
     Http::fake(fn () => Http::response(['items' => []], 200));
 
-    N8nClient::credentials()->list(25, 'abc');
+    N8nClient::credentials()->list(['limit' => 25, 'cursor' => 'abc']);
 
     $url = Config::get('n8n.api.base_url');
 
