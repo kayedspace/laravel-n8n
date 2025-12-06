@@ -4,7 +4,7 @@ includes:
 parameters:
 	phpVersion:
 		min: 80200
-		max: 80400
+		max: 80500
 
 	paths:
 		- src
